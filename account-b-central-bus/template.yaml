@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Account B - Central event bus stack
+
+Parameters:
+  EventBusName:
+    Description: Name of the central event bus
+    Type: String
+    Default: central-event-bus
+  AccountA:
+    Description: Account number for account A
+    Type: String
+  AccountC:
+    Description: Account number for account C
+    Type: String
+
+Resources:
+  CentralEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Ref EventBusName
+
+  WebStoreCrossAccountPublishStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref CentralEventBus
+      StatementId: "WebStoreCrossAccountPublish"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: !Sub arn:aws:iam::${AccountA}:root
+        Action: "events:PutEvents"
+        Resource: !GetAtt CentralEventBus.Arn
+        Condition:
+          StringEquals:
+            "events:detail-type": "newOrderCreated"
+            "events:source": "com.exampleCorp.webStore"
+
+  InvoiceProcessingRuleCreationStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref CentralEventBus
+      StatementId: "InvoiceProcessingRuleCreation"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: !Sub arn:aws:iam::${AccountC}:root
+        Action:
+          - "events:PutRule"
+          - "events:DeleteRule"
+          - "events:DescribeRule"
+          - "events:DisableRule"
+          - "events:EnableRule"
+          - "events:PutTargets"
+          - "events:RemoveTargets"
+        Resource:
+          - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${CentralEventBus.Name}/*
+        Condition:
+          StringEqualsIfExists:
+            "events:creatorAccount": "${aws:PrincipalAccount}"
+            "events:source": "com.exampleCorp.webStore"
+
+Outputs:
+  CentralEventBusArn:
+    Description: The ARN of the central event bus
+    Value: !GetAtt CentralEventBus.Arn

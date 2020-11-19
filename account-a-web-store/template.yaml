@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Account A - Web store stack
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Parameters:
+  CentralEventBusArn:
+    Description: The ARN of the central event bus # e.g. arn:aws:events:us-east-1:[ACCOUNT-B]:event-bus/central-event-bus
+    Type: String
+
+Resources:
+  OrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: order_function/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Policies:
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: "*"
+      Environment:
+        Variables:
+          CENTRAL_EVENT_BUS_ARN: !Ref CentralEventBusArn
+
+Outputs:
+  OrderFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt OrderFunction.Arn
+  OrderFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt OrderFunctionRole.Arn

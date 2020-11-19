@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Account C - Invoice processing service stack
+
+Parameters:
+  EventBusName:
+    Description: Name of the central event bus
+    Type: String
+    Default: invoice-processing-event-bus
+
+  CentralEventBusArn:
+    Description: The ARN of the central event bus # e.g. arn:aws:events:us-east-1:[ACCOUNT-B]:event-bus/central-event-bus
+    Type: String
+
+Resources:
+
+  # This is the receiving invoice processing event bus in account C.
+  InvoiceProcessingEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: !Ref EventBusName
+
+# AWS Lambda function processes the newOrderCreated event
+  InvoiceProcessingFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: invoice_processing
+      Handler: invoice_processing_function/app.lambda_handler
+      Runtime: python3.8
+      Events:
+        NewOrderCreatedRule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref InvoiceProcessingEventBus
+            Pattern:
+              source:
+                - com.exampleCorp.webStore
+              detail-type:
+                - newOrderCreated
+    
+  # This is the rule that the invoice processing service creates on the central event bus
+  InvoiceProcessingRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: InvoiceProcessingNewOrderCreatedSubscription
+      Description: Cross account rule created by Invoice Processing service
+      EventBusName: !Ref CentralEventBusArn # ARN of the central event bus
+      EventPattern:
+        source:
+          - com.exampleCorp.webStore
+        detail-type:
+          - newOrderCreated
+      State: ENABLED
+      Targets: 
+        - Id: SendEventsToInvoiceProcessingEventBus
+          Arn: !GetAtt InvoiceProcessingEventBus.Arn
+          RoleArn: !GetAtt CentralEventBusToInvoiceProcessingEventBusRole.Arn
+          DeadLetterConfig:
+            Arn: !GetAtt InvoiceProcessingTargetDLQ.Arn
+
+  # This IAM role allows EventBridge to assume the permissions necessary to send events to the 
+  # Invoice Processing event bus, without you having to create an additional resource policy 
+  # on the Invoice Processing event bus.
+  CentralEventBusToInvoiceProcessingEventBusRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - events.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: PutEventsOnInvoiceProcessingEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'events:PutEvents'
+                Resource: !GetAtt InvoiceProcessingEventBus.Arn
+
+
+  # Invoice Processing Target Dead Letter Queue 
+  InvoiceProcessingTargetDLQ:
+    Type: AWS::SQS::Queue
+
+  # SQS resource policy required to allow target on central bus to send failed messages to target DLQ
+  InvoiceProcessingTargetDLQPolicy: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref InvoiceProcessingTargetDLQ
+      PolicyDocument: 
+        Statement: 
+          - Action: 
+              - "SQS:SendMessage" 
+            Effect: "Allow"
+            Resource: !GetAtt InvoiceProcessingTargetDLQ.Arn
+            Principal:  
+              Service: "events.amazonaws.com"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !GetAtt InvoiceProcessingRule.Arn
+        
+Outputs:
+  InvoiceProcessingFunction:
+    Description: "Invoice Processing Lambda Function ARN"
+    Value: !GetAtt InvoiceProcessingFunction.Arn
+  InvoiceProcessingFunctionIamRole:
+    Description: "Implicit IAM Role created for Invoice Processing function"
+    Value: !GetAtt InvoiceProcessingFunctionRole.Arn
+  InvoiceProcessingTargetDLQArn:
+    Description: Arn of the DLQ for Invoice Processing TargetDLQ
+    Value: !GetAtt InvoiceProcessingTargetDLQ.Arn

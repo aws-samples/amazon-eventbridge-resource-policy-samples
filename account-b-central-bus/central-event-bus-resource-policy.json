@@ -1,0 +1,43 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "WebStoreCrossAccountPublish",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::[ACCOUNT-A]:root"
+      },
+      "Action": "events:PutEvents",
+      "Resource": "arn:aws:events:us-east-1:[ACCOUNT-B]:event-bus/central-event-bus",
+      "Condition": {
+        "StringEquals": {
+          "events:detail-type": "newOrderCreated",
+          "events:source": "com.exampleCorp.webStore"
+        }
+      }
+    },
+    {
+      "Sid": "InvoiceProcessingRuleCreation",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::[ACCOUNT-C]:root"
+      },
+      "Action": [
+        "events:PutRule",
+        "events:DeleteRule",
+        "events:DescribeRule",
+        "events:DisableRule",
+        "events:EnableRule",
+        "events:PutTargets",
+        "events:RemoveTargets"
+      ],
+      "Resource": "arn:aws:events:us-east-1:[ACCOUNT-B]:rule/central-event-bus/*",
+      "Condition": {
+        "StringEqualsIfExists": {
+          "events:creatorAccount": "${aws:PrincipalAccount}",
+          "events:source": "com.exampleCorp.webStore"
+        }
+      }
+    }
+  ]
+}

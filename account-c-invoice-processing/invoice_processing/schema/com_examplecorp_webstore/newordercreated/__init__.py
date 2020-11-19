@@ -1,0 +1,8 @@
+# coding: utf-8
+
+from __future__ import absolute_import
+
+from schema.com_examplecorp_webstore.newordercreated.marshaller import Marshaller
+from schema.com_examplecorp_webstore.newordercreated.AWSEvent import AWSEvent
+from schema.com_examplecorp_webstore.newordercreated.NewOrderCreated import NewOrderCreated
+from schema.com_examplecorp_webstore.newordercreated.NewOrderCreatedItem import NewOrderCreatedItem
