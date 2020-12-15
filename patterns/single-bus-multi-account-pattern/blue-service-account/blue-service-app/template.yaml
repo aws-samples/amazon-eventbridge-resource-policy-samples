@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Blue service app for for single bus, multi-account-pattern
+
+
+Globals:
+  Function:
+    Timeout: 3
+    Handler: app.lambda_handler
+    Runtime: python3.8
+
+
+Parameters:
+  EventBusName:
+    Description: Name of the blue service app event bus
+    Type: String
+    Default: blue-service-event-bus
+    
+  DevOpsEventBusArn:
+    Description: The ARN of the devops event bus # e.g. arn:aws:events:us-east-1:[DEVOPS-ACCOUNT]:event-bus/devops-event-bus
+    Type: String
+
+
+Resources:
+  # Event bus for blue service. In single bus topology 
+  # this is the target for the devops event bus rule 
+  BlueServiceAppEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: !Ref EventBusName
+
+  BlueServicePublisherE1:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: blue_p_e1/
+      Policies:
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: "*" 
+      Environment:
+        Variables:
+          DEVOPS_EVENT_BUS_ARN: !Ref DevOpsEventBusArn
+
+  BlueServiceSubscriberE2:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: blue_s_e2/
+      Events:
+        NewOrderCreatedRule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref BlueServiceAppEventBus
+            Pattern:
+              source:
+                - com.exampleCorp.PurpleService
+              detail-type:
+                - Event2
+                
+Outputs:
+  BlueServicePublisherE1:
+    Description: "Lambda function ARN for blue service publishing event 1"
+    Value: !GetAtt BlueServicePublisherE1.Arn
+  BlueServicePublisherE1IamRole:
+    Description: "Implicit IAM Role created for BlueServicePublisherE1 function"
+    Value: !GetAtt BlueServicePublisherE1Role.Arn
+  BlueServiceSubscriberE2:
+    Description: "Lambda function ARN for purple service subscriber to event 2"
+    Value: !GetAtt BlueServiceSubscriberE2.Arn
+  BlueServiceSubscriberE2IamRole:
+    Description: "Implicit IAM Role created for BlueServiceSubscriberE2 function"
+    Value: !GetAtt BlueServiceSubscriberE2Role.Arn

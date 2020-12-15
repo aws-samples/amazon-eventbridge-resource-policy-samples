@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  DevOps event bus stack for single bus, multi-account-pattern
+
+Parameters:
+  EventBusName:
+    Description: Name of the DevOps event bus
+    Type: String
+    Default: devops-event-bus
+  BlueServiceAccountNo:
+    Description: Account number for blue service
+    Type: String
+    AllowedPattern: ^\d{12}$
+  PurpleServiceAccountNo:
+    Description: Account number for purple service
+    Type: String
+    AllowedPattern: ^\d{12}$
+  OrangeServiceAccountNo:
+    Description: Account number for orange service
+    Type: String
+    AllowedPattern: ^\d{12}$
+
+Resources:
+  DevOpsEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Ref EventBusName
+
+  CrossAccountPublishStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref DevOpsEventBus
+      StatementId: "CrossAccountPublish"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: 
+            - !Sub arn:aws:iam::${BlueServiceAccountNo}:root
+            - !Sub arn:aws:iam::${PurpleServiceAccountNo}:root
+            - !Sub arn:aws:iam::${OrangeServiceAccountNo}:root
+        Action: "events:PutEvents"
+        Resource: !GetAtt DevOpsEventBus.Arn
+        Condition:
+          StringEquals:
+            "events:source": ["com.exampleCorp.BlueService", "com.exampleCorp.PurpleService", "com.exampleCorp.OrangeService"]
+
+  BlueServiceRuleCreationStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref DevOpsEventBus
+      StatementId: "BlueServiceRuleCreation"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: !Sub arn:aws:iam::${BlueServiceAccountNo}:root
+        Action:
+          - "events:PutRule"
+          - "events:DeleteRule"
+          - "events:DescribeRule"
+          - "events:DisableRule"
+          - "events:EnableRule"
+          - "events:PutTargets"
+          - "events:RemoveTargets"
+        Resource:
+          - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${DevOpsEventBus.Name}/*
+        Condition:
+          StringEqualsIfExists:
+            "events:creatorAccount": "${aws:PrincipalAccount}"
+            "events:source": "com.exampleCorp.BlueService"
+
+  PurpleServiceRuleCreationStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref DevOpsEventBus
+      StatementId: "PurpleServiceRuleCreation"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: !Sub arn:aws:iam::${PurpleServiceAccountNo}:root
+        Action:
+          - "events:PutRule"
+          - "events:DeleteRule"
+          - "events:DescribeRule"
+          - "events:DisableRule"
+          - "events:EnableRule"
+          - "events:PutTargets"
+          - "events:RemoveTargets"
+        Resource:
+          - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${DevOpsEventBus.Name}/*
+        Condition:
+          StringEqualsIfExists:
+            "events:creatorAccount": "${aws:PrincipalAccount}"
+            "events:source": "com.exampleCorp.PurpleService"
+
+  OrangeServiceRuleCreationStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref DevOpsEventBus
+      StatementId: "OrangeServiceRuleCreation"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: !Sub arn:aws:iam::${OrangeServiceAccountNo}:root
+        Action:
+          - "events:PutRule"
+          - "events:DeleteRule"
+          - "events:DescribeRule"
+          - "events:DisableRule"
+          - "events:EnableRule"
+          - "events:PutTargets"
+          - "events:RemoveTargets"
+        Resource:
+          - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${DevOpsEventBus.Name}/*
+        Condition:
+          StringEqualsIfExists:
+            "events:creatorAccount": "${aws:PrincipalAccount}"
+            "events:source": "com.exampleCorp.OrangeService"
+Outputs:
+  DevOpsEventBusArn:
+    Description: The ARN of the DevOps event bus
+    Value: !GetAtt DevOpsEventBus.Arn

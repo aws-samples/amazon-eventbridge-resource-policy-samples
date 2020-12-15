@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Orange service app for for single bus, multi-account-pattern
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Handler: app.lambda_handler
+    Runtime: python3.8
+    Timeout: 3
+
+Parameters:
+  EventBusName:
+    Description: Name of the orange service app event bus
+    Type: String
+    Default: orange-service-event-bus
+
+  DevOpsEventBusArn:
+    Description: The ARN of the devops event bus # e.g. arn:aws:events:us-east-1:[DEVOPS-ACCOUNT]:event-bus/devops-event-bus
+    Type: String
+    
+Resources:
+
+  # Event bus for orange service. In single bus topology 
+  # this is the target for the devops event bus rule 
+  OrangeServiceAppEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: !Ref EventBusName
+
+  OrangeServicePublisherE3:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: orange_p_e3/
+      Policies:
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: "*" 
+      Environment:
+        Variables:
+          DEVOPS_EVENT_BUS_ARN: !Ref DevOpsEventBusArn
+
+  OrangeServiceSubscriberE2:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: orange_s_e2/
+      Events:
+        NewOrderCreatedRule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref OrangeServiceAppEventBus
+            Pattern:
+              source:
+                - com.exampleCorp.PurpleService
+              detail-type:
+                - Event2
+          
+Outputs:
+  OrangeServicePublisherE3:
+    Description: "Lambda function ARN for Orange service publishing event 3"
+    Value: !GetAtt OrangeServicePublisherE3.Arn
+  OrangeServicePublisherE3IamRole:
+    Description: "Implicit IAM Role created for OrangeServicePublisherE3 function"
+    Value: !GetAtt OrangeServicePublisherE3Role.Arn
+  OrangeServiceSubscriberE2:
+    Description: "Lambda function ARN for orange service subscriber to event 2"
+    Value: !GetAtt OrangeServiceSubscriberE2.Arn
+  OrangeServiceSubscriberE2IamRole:
+    Description: "Implicit IAM Role created for OrangeServiceSubscriberE2 function"
+    Value: !GetAtt OrangeServiceSubscriberE2Role.Arn

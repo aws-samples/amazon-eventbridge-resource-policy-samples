@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Purple service app for single bus, multi-account-pattern
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    Handler: app.lambda_handler
+    Runtime: python3.8
+    Tags:
+      pattern: single-bus-multi-account-pattern
+
+Parameters:
+  EventBusName:
+    Description: Name of the purple service app event bus
+    Type: String
+    Default: purple-service-event-bus
+
+  DevOpsEventBusArn:
+    Description: The ARN of the devops event bus # e.g. arn:aws:events:us-east-1:[DEVOPS-ACCOUNT]:event-bus/devops-event-bus
+    Type: String
+
+
+Resources:
+
+  # Event bus for purple service. In single bus topology 
+  # this is the target for the devops event bus rule
+  PurpleServiceAppEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: !Ref EventBusName
+
+  PurpleServicePublisherE2:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: purple_p_e2/
+      Policies:
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: "*" 
+      Environment:
+        Variables:
+          DEVOPS_EVENT_BUS_ARN: !Ref DevOpsEventBusArn
+
+  PurpleServiceSubscriberE1:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: purple_s_e1/
+      Events:
+        NewOrderCreatedRule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref PurpleServiceAppEventBus
+            Pattern:
+              source:
+                - com.exampleCorp.BlueService
+              detail-type:
+                - Event1
+
+  PurpleServiceSubscriberE3:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: purple_s_e3/
+      Events:
+        NewOrderCreatedRule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref PurpleServiceAppEventBus
+            Pattern:
+              source:
+                - com.exampleCorp.OrangeService
+              detail-type:
+                - Event3
+
+Outputs:
+  PurpleServicePublisherE2:
+    Description: "Lambda function ARN for purple service publishing event 2"
+    Value: !GetAtt PurpleServicePublisherE2.Arn
+  PurpleServicePublisherE2IamRole:
+    Description: "Implicit IAM Role created for PurpleServicePublisherE2 function"
+    Value: !GetAtt PurpleServicePublisherE2Role.Arn
+  PurpleServiceSubscriberE1:
+    Description: "Lambda function ARN for purple service subscriber to event 1"
+    Value: !GetAtt PurpleServiceSubscriberE1.Arn
+  PurpleServiceSubscriberE1IamRole:
+    Description: "Implicit IAM Role created for PurpleServiceSubscriberE1 function"
+    Value: !GetAtt PurpleServiceSubscriberE1Role.Arn
+  PurpleServiceSubscriberE3:
+    Description: "Lambda function ARN for purple service subscriber to event 3"
+    Value: !GetAtt PurpleServiceSubscriberE3.Arn
+  PurpleServiceSubscriberE3IamRole:
+    Description: "Implicit IAM Role created for PurpleServiceSubscriberE3 function"
+    Value: !GetAtt PurpleServiceSubscriberE3Role.Arn
