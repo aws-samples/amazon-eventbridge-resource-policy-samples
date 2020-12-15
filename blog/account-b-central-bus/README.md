@@ -2,7 +2,7 @@
 
 This template creates the Central event bus in account B. **Make sure you deploy this first, before any other applications.**
 
-![Walkthrough architecture](../docs/images/account-b.png "Walkthrough architecture")
+![Walkthrough architecture](../../docs/images/account-b.png "Walkthrough architecture")
 
 For more details on the implementation visit the accompanying AWS blog post ["Simplifying cross-account access with Amazon EventBridge resource policies"](https://aws.amazon.com/blogs/compute/simplifying-cross-account-access-with-amazon-eventbridge-resource-policies)
 

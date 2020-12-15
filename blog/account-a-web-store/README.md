@@ -1,10 +1,11 @@
-# Deploy the invoice processing function to account C
+# Deploy the web store function to account A
 
 This template creates the AWS Lambda function for the web store in account A. Make [sure you have deployed the Central event bus before deploying this application](../account-b-central-bus/README.md), as you will need Amazon Resource Name (ARN)  for the event bus as an input parameter for this application stack.
 
-![Walkthrough architecture](../docs/images/account-c.png "Walkthrough architecture")
+![Walkthrough architecture](../../docs/images/account-a.png "Walkthrough architecture")
 
 For more details on the implementation visit the accompanying AWS blog post ["Simplifying cross-account access with Amazon EventBridge resource policies"](https://aws.amazon.com/blogs/compute/simplifying-cross-account-access-with-amazon-eventbridge-resource-policies)
+
 
 ## Deploy the application
 
@@ -32,10 +33,9 @@ The first command will build the source of your application. The second command 
 * **Allow SAM CLI IAM role creation**: Many AWS SAM templates, including this example, create AWS IAM roles required for the AWS Lambda function(s) included to access AWS services. By default, these are scoped down to minimum required permissions. To deploy an AWS CloudFormation stack which creates or modified IAM roles, the `CAPABILITY_IAM` value for `capabilities` must be provided. If permission isn't provided through this prompt, to deploy this example you must explicitly pass `--capabilities CAPABILITY_IAM` to the `sam deploy` command.
 * **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
 
-The template takes two parameters:
+The template takes one parameters:
 
-* **EventBusName:** Name of the invoice processing event bus in account C
-* **CentralEventBusArn:** the ARN of the central event bus
+* **CentralEventBusArn:** the ARN of the central event bus in account B
 
 ## Cleanup
 
