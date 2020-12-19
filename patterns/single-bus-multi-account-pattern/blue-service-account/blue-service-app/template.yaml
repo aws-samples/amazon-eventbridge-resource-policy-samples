@@ -23,13 +23,6 @@ Parameters:
 
 
 Resources:
-  # Event bus for blue service. In single bus topology 
-  # this is the target for the devops event bus rule 
-  BlueServiceAppEventBus: 
-    Type: AWS::Events::EventBus
-    Properties: 
-        Name: !Ref EventBusName
-
   BlueServicePublisherE1:
     Type: AWS::Serverless::Function
     Properties:
@@ -45,6 +38,13 @@ Resources:
         Variables:
           DEVOPS_EVENT_BUS_ARN: !Ref DevOpsEventBusArn
 
+  # Event bus for blue service. In single bus topology 
+  # this is the target for the devops event bus rule 
+  BlueServiceEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: !Ref EventBusName
+
   BlueServiceSubscriberE2:
     Type: AWS::Serverless::Function 
     Properties:
@@ -53,13 +53,81 @@ Resources:
         NewOrderCreatedRule:
           Type: EventBridgeRule
           Properties:
-            EventBusName: !Ref BlueServiceAppEventBus
+            EventBusName: !Ref BlueServiceEventBus
             Pattern:
               source:
                 - com.exampleCorp.PurpleService
               detail-type:
                 - Event2
-                
+
+  # Rule that is placed on the DevOps event bus for Event 2
+  BlueServiceEvent2SubscriptionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: Event2Subscription
+      Description: Cross account rule created by Blue service for event 2
+      EventBusName: !Ref DevOpsEventBusArn # ARN of the devops event bus
+      EventPattern:
+        source:
+          - com.exampleCorp.PurpleService
+        detail-type:
+          - Event2
+      State: ENABLED
+      Targets: 
+        - Id: SendEvent2ToBlueServiceEventBus
+          Arn: !GetAtt BlueServiceEventBus.Arn
+          RoleArn: !GetAtt DevOpsEventBusToBlueServiceEventBusRole.Arn
+          DeadLetterConfig:
+            Arn: !GetAtt BlueServiceEventBusDlq.Arn
+
+
+  # This IAM role allows EventBridge to assume the permissions necessary to send events 
+  # from the DevOps event bus to the Blue service event bus. No resource policy is required
+  # on the Blue service event bus.
+  DevOpsEventBusToBlueServiceEventBusRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - events.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:   
+        - PolicyName: PutEventsOnBlueServiceEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'events:PutEvents'
+                Resource: !GetAtt BlueServiceEventBus.Arn
+
+  # Blue service event bus targe DLQ 
+  BlueServiceEventBusDlq:
+    Type: AWS::SQS::Queue
+
+  # SQS resource policy required to allow target on devops bus to send failed messages to target DLQ
+  BlueServiceEventBusDlqPolicy: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref BlueServiceEventBusDlq
+      PolicyDocument: 
+        Statement: 
+          - Action: 
+              - "SQS:SendMessage" 
+            Effect: "Allow"
+            Resource: !GetAtt BlueServiceEventBusDlq.Arn
+            Principal:  
+              Service: "events.amazonaws.com"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !GetAtt BlueServiceEvent2SubscriptionRule.Arn
+
 Outputs:
   BlueServicePublisherE1:
     Description: "Lambda function ARN for blue service publishing event 1"
