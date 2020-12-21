@@ -27,7 +27,7 @@ Resources:
 
   # Event bus for purple service. In single bus topology 
   # this is the target for the devops event bus rule
-  PurpleServiceAppEventBus: 
+  PurpleServiceEventBus: 
     Type: AWS::Events::EventBus
     Properties: 
         Name: !Ref EventBusName
@@ -55,7 +55,7 @@ Resources:
         NewOrderCreatedRule:
           Type: EventBridgeRule
           Properties:
-            EventBusName: !Ref PurpleServiceAppEventBus
+            EventBusName: !Ref PurpleServiceEventBus
             Pattern:
               source:
                 - com.exampleCorp.BlueService
@@ -70,12 +70,101 @@ Resources:
         NewOrderCreatedRule:
           Type: EventBridgeRule
           Properties:
-            EventBusName: !Ref PurpleServiceAppEventBus
+            EventBusName: !Ref PurpleServiceEventBus
             Pattern:
               source:
                 - com.exampleCorp.OrangeService
               detail-type:
                 - Event3
+
+  # Rule that is placed on the DevOps event bus for Event 2
+  PurpleServiceEvent1SubscriptionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: PurpleEvent1Subscription
+      Description: Cross account rule created by Blue service for event 2
+      EventBusName: !Ref DevOpsEventBusArn # ARN of the devops event bus
+      EventPattern:
+        source:
+          - com.exampleCorp.BlueService
+        detail-type:
+          - Event1
+      State: ENABLED
+      Targets: 
+        - Id: SendEvent1ToPurpleServiceEventBus
+          Arn: !GetAtt PurpleServiceEventBus.Arn
+          RoleArn: !GetAtt DevOpsEventBusToPurpleServiceEventBusRole.Arn
+          DeadLetterConfig:
+            Arn: !GetAtt PurpleServiceEventBusDlq.Arn
+
+  # Rule that is placed on the DevOps event bus for Event 2
+  PurpleServiceEvent3SubscriptionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: PurpleEvent3Subscription
+      Description: Cross account rule created by Blue service for event 2
+      EventBusName: !Ref DevOpsEventBusArn # ARN of the devops event bus
+      EventPattern:
+        source:
+          - com.exampleCorp.OrangeService
+        detail-type:
+          - Event3
+      State: ENABLED
+      Targets: 
+        - Id: SendEvent3ToPurpleServiceEventBus
+          Arn: !GetAtt PurpleServiceEventBus.Arn
+          RoleArn: !GetAtt DevOpsEventBusToPurpleServiceEventBusRole.Arn
+          DeadLetterConfig:
+            Arn: !GetAtt PurpleServiceEventBusDlq.Arn
+  # This IAM role allows EventBridge to assume the permissions necessary to send events 
+  # from the DevOps event bus to the Blue service event bus. No resource policy is required
+  # on the Blue service event bus.
+  DevOpsEventBusToPurpleServiceEventBusRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - events.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:   
+        - PolicyName: PutEventsOnPurpleServiceEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'events:PutEvents'
+                Resource: !GetAtt PurpleServiceEventBus.Arn
+
+  # Blue service event bus targe DLQ 
+  PurpleServiceEventBusDlq:
+    Type: AWS::SQS::Queue
+
+  # SQS resource policy required to allow target on devops bus to send failed messages to target DLQ
+  PurpleServiceEventBusDlqPolicy: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref PurpleServiceEventBusDlq
+      PolicyDocument: 
+        Statement: 
+          - Action: 
+              - "SQS:SendMessage" 
+            Effect: "Allow"
+            Resource: !GetAtt PurpleServiceEventBusDlq.Arn
+            Principal:  
+              Service: "events.amazonaws.com"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": [
+                  !GetAtt PurpleServiceEvent1SubscriptionRule.Arn, 
+                  !GetAtt PurpleServiceEvent1SubscriptionRule.Arn
+                ]
 
 Outputs:
   PurpleServicePublisherE2:
