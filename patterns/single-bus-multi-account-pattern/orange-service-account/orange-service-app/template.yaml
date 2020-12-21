@@ -24,7 +24,7 @@ Resources:
 
   # Event bus for orange service. In single bus topology 
   # this is the target for the devops event bus rule 
-  OrangeServiceAppEventBus: 
+  OrangeServiceEventBus: 
     Type: AWS::Events::EventBus
     Properties: 
         Name: !Ref EventBusName
@@ -52,13 +52,80 @@ Resources:
         NewOrderCreatedRule:
           Type: EventBridgeRule
           Properties:
-            EventBusName: !Ref OrangeServiceAppEventBus
+            EventBusName: !Ref OrangeServiceEventBus
             Pattern:
               source:
                 - com.exampleCorp.PurpleService
               detail-type:
                 - Event2
-          
+  # Rule that is placed on the DevOps event bus for Event 2
+  OrangeServiceEvent2SubscriptionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: OrangeEvent2Subscription
+      Description: Cross account rule created by Orange service for event 2
+      EventBusName: !Ref DevOpsEventBusArn # ARN of the devops event bus
+      EventPattern:
+        source:
+          - com.exampleCorp.PurpleService
+        detail-type:
+          - Event2
+      State: ENABLED
+      Targets: 
+        - Id: SendEvent2ToOrangeServiceEventBus
+          Arn: !GetAtt OrangeServiceEventBus.Arn
+          RoleArn: !GetAtt DevOpsEventBusToOrangeServiceEventBusRole.Arn
+          DeadLetterConfig:
+            Arn: !GetAtt OrangeServiceEventBusDlq.Arn
+
+
+  # This IAM role allows EventBridge to assume the permissions necessary to send events 
+  # from the DevOps event bus to the Orange service event bus. No resource policy is required
+  # on the Orange service event bus.
+  DevOpsEventBusToOrangeServiceEventBusRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - events.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:   
+        - PolicyName: PutEventsOnOrangeServiceEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'events:PutEvents'
+                Resource: !GetAtt OrangeServiceEventBus.Arn
+
+  # Orange service event bus targe DLQ 
+  OrangeServiceEventBusDlq:
+    Type: AWS::SQS::Queue
+
+  # SQS resource policy required to allow target on devops bus to send failed messages to target DLQ
+  OrangeServiceEventBusDlqPolicy: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref OrangeServiceEventBusDlq
+      PolicyDocument: 
+        Statement: 
+          - Action: 
+              - "SQS:SendMessage" 
+            Effect: "Allow"
+            Resource: !GetAtt OrangeServiceEventBusDlq.Arn
+            Principal:  
+              Service: "events.amazonaws.com"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !GetAtt OrangeServiceEvent2SubscriptionRule.Arn
+         
 Outputs:
   OrangeServicePublisherE3:
     Description: "Lambda function ARN for Orange service publishing event 3"
