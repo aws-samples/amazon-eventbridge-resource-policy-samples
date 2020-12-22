@@ -49,7 +49,7 @@ Resources:
     Properties:
       CodeUri: orange_s_e2/
       Events:
-        NewOrderCreatedRule:
+        OrangeE2Rule:
           Type: EventBridgeRule
           Properties:
             EventBusName: !Ref OrangeServiceEventBus
@@ -77,7 +77,8 @@ Resources:
           RoleArn: !GetAtt DevOpsEventBusToOrangeServiceEventBusRole.Arn
           DeadLetterConfig:
             Arn: !GetAtt OrangeServiceEventBusDlq.Arn
-
+          RetryPolicy:
+            MaximumRetryAttempts: 5
 
   # This IAM role allows EventBridge to assume the permissions necessary to send events 
   # from the DevOps event bus to the Orange service event bus. No resource policy is required
