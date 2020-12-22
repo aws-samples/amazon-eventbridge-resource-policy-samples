@@ -1,0 +1,190 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Blue service app for for single bus, multi-account-pattern
+
+
+Globals:
+  Function:
+    Timeout: 3
+    Handler: app.lambda_handler
+    Runtime: python3.8
+
+
+Parameters:
+  EventBusName:
+    Description: Name of the blue service app event bus
+    Type: String
+    Default: blue-service-event-bus
+
+  PurpleServiceEventBusArn:
+    Description: ARN of the Purple service event bus to add rules
+    Type: String
+
+  PurpleServiceAccountNo:
+    Description: Account Id Purple service event bus to add rules
+    Type: String
+
+Resources:
+
+  # Event bus for blue service
+  BlueServiceEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: !Ref EventBusName
+
+  # Resource policy for Blue service event bus
+  BlueServicePublishStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref BlueServiceEventBus
+      StatementId: "BlueServicePublish"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: 
+            - !Sub arn:aws:iam::${AWS::AccountId}:root
+        Action: "events:PutEvents"
+        Resource: !GetAtt BlueServiceEventBus.Arn
+        Condition:
+          StringEquals:
+            "events:source": ["com.exampleCorp.BlueService"]
+
+  PurpleServiceRuleCreationStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref BlueServiceEventBus
+      StatementId: "PurpleServiceRuleCreation"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: !Sub arn:aws:iam::${PurpleServiceAccountNo}:root
+        Action:
+          - "events:PutRule"
+          - "events:DeleteRule"
+          - "events:DescribeRule"
+          - "events:DisableRule"
+          - "events:EnableRule"
+          - "events:PutTargets"
+          - "events:RemoveTargets"
+        Resource:
+          - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${BlueServiceEventBus.Name}/*
+        Condition:
+          StringEqualsIfExists:
+            "events:creatorAccount": "${aws:PrincipalAccount}"
+            "events:source": "com.exampleCorp.PurpleService"
+
+  BlueServicePublisherE1:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: blue_p_e1/
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: !GetAtt BlueServiceEventBus.Arn
+      Environment:
+        Variables:
+          BLUE_SERVICE_EVENT_BUS_ARN: !Ref BlueServiceEventBusArn
+
+
+  BlueServiceSubscriberE2:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: blue_s_e2/
+      Events:
+        BlueE2Rule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref BlueServiceEventBus
+            Pattern:
+              source:
+                - com.exampleCorp.PurpleService
+              detail-type:
+                - Event2
+
+  # Rule that is placed on the Purple event bus for Event 2
+  BlueServiceEvent2SubscriptionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: BlueEvent2Subscription
+      Description: Cross account rule created by Blue service for event 2
+      EventBusName: !Ref PurpleServiceEventBusArn # ARN of the Purple service event bus
+      EventPattern:
+        source:
+          - com.exampleCorp.PurpleService
+        detail-type:
+          - Event2
+      State: ENABLED
+      Targets: 
+        - Id: SendEvent2ToBlueServiceEventBus
+          Arn: !GetAtt BlueServiceEventBus.Arn
+          RoleArn: !GetAtt PurpleServiceEventBusToBlueServiceEventBusRole.Arn
+          DeadLetterConfig:
+            Arn: !GetAtt BlueServiceEventBusDlq.Arn
+          RetryPolicy:
+            MaximumRetryAttempts: 5
+
+  # This IAM role allows EventBridge to assume the permissions necessary to send events 
+  # from the Purple event bus to the Blue service event bus. No resource policy is required
+  # on the Blue service event bus.
+  PurpleServiceEventBusToBlueServiceEventBusRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - events.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:   
+        - PolicyName: PutEventsOnBlueServiceEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:            
+              - Effect: Allow
+                Action: 'events:PutEvents'
+                Resource: !GetAtt BlueServiceEventBus.Arn
+
+
+  # Blue service event bus targe DLQ 
+  BlueServiceEventBusDlq:
+    Type: AWS::SQS::Queue
+
+  # SQS resource policy required to allow target on devops bus to send failed messages to target DLQ
+  BlueServiceEventBusDlqPolicy: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref BlueServiceEventBusDlq
+      PolicyDocument: 
+        Statement: 
+          - Action: 
+              - "SQS:SendMessage" 
+            Effect: "Allow"
+            Resource: !GetAtt BlueServiceEventBusDlq.Arn
+            Principal:  
+              Service: "events.amazonaws.com"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !GetAtt BlueServiceEvent2SubscriptionRule.Arn
+
+Outputs:
+  BlueServicePublisherE1:
+    Description: "Lambda function ARN for blue service publishing event 1"
+    Value: !GetAtt BlueServicePublisherE1.Arn
+  BlueServicePublisherE1IamRole:
+    Description: "Implicit IAM Role created for BlueServicePublisherE1 function"
+    Value: !GetAtt BlueServicePublisherE1Role.Arn
+  BlueServiceSubscriberE2:
+    Description: "Lambda function ARN for purple service subscriber to event 2"
+    Value: !GetAtt BlueServiceSubscriberE2.Arn
+  BlueServiceSubscriberE2IamRole:
+    Description: "Implicit IAM Role created for BlueServiceSubscriberE2 function"
+    Value: !GetAtt BlueServiceSubscriberE2Role.Arn
