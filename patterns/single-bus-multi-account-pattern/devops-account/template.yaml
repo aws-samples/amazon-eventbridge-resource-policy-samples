@@ -66,7 +66,7 @@ Resources:
         Condition:
           StringEqualsIfExists:
             "events:creatorAccount": "${aws:PrincipalAccount}"
-            "events:source": "com.exampleCorp.BlueService"
+            "events:source": "com.exampleCorp.PurpleService"
 
   PurpleServiceRuleCreationStatement:
     Type: AWS::Events::EventBusPolicy
@@ -90,7 +90,7 @@ Resources:
         Condition:
           StringEqualsIfExists:
             "events:creatorAccount": "${aws:PrincipalAccount}"
-            "events:source": "com.exampleCorp.PurpleService"
+            "events:source": [ "com.exampleCorp.BlueService", "com.exampleCorp.OrangeService" ]
 
   OrangeServiceRuleCreationStatement:
     Type: AWS::Events::EventBusPolicy
@@ -114,7 +114,7 @@ Resources:
         Condition:
           StringEqualsIfExists:
             "events:creatorAccount": "${aws:PrincipalAccount}"
-            "events:source": "com.exampleCorp.OrangeService"
+            "events:source": "com.exampleCorp.PurpleService"
 Outputs:
   DevOpsEventBusArn:
     Description: The ARN of the DevOps event bus
