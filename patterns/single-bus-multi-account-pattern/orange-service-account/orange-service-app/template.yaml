@@ -77,8 +77,6 @@ Resources:
           RoleArn: !GetAtt DevOpsEventBusToOrangeServiceEventBusRole.Arn
           DeadLetterConfig:
             Arn: !GetAtt OrangeServiceEventBusDlq.Arn
-          RetryPolicy:
-            MaximumRetryAttempts: 5
 
   # This IAM role allows EventBridge to assume the permissions necessary to send events 
   # from the DevOps event bus to the Orange service event bus. No resource policy is required

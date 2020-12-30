@@ -38,6 +38,7 @@ Resources:
         Variables:
           DEVOPS_EVENT_BUS_ARN: !Ref DevOpsEventBusArn
 
+
   # Event bus for blue service. In single bus topology 
   # this is the target for the devops event bus rule 
   BlueServiceEventBus: 
@@ -79,8 +80,6 @@ Resources:
           RoleArn: !GetAtt DevOpsEventBusToBlueServiceEventBusRole.Arn
           DeadLetterConfig:
             Arn: !GetAtt BlueServiceEventBusDlq.Arn
-          RetryPolicy:
-            MaximumRetryAttempts: 5
 
   # This IAM role allows EventBridge to assume the permissions necessary to send events 
   # from the DevOps event bus to the Blue service event bus. No resource policy is required

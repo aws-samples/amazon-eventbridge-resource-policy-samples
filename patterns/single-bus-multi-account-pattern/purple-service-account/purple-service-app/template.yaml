@@ -96,8 +96,7 @@ Resources:
           RoleArn: !GetAtt DevOpsEventBusToPurpleServiceEventBusRole.Arn
           DeadLetterConfig:
             Arn: !GetAtt PurpleServiceEventBusDlq.Arn
-          RetryPolicy:
-            MaximumRetryAttempts: 5
+
   # Rule that is placed on the DevOps event bus for Event 2
   PurpleServiceEvent3SubscriptionRule:
     Type: AWS::Events::Rule
@@ -117,8 +116,7 @@ Resources:
           RoleArn: !GetAtt DevOpsEventBusToPurpleServiceEventBusRole.Arn
           DeadLetterConfig:
             Arn: !GetAtt PurpleServiceEventBusDlq.Arn
-          RetryPolicy:
-            MaximumRetryAttempts: 5
+
   # This IAM role allows EventBridge to assume the permissions necessary to send events 
   # from the DevOps event bus to the Blue service event bus. No resource policy is required
   # on the Blue service event bus.
