@@ -1,21 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Blue service app for for single bus, multi-account-pattern
-
+  Blue service app for for multi-bus, multi-account-pattern
 
 Globals:
   Function:
     Timeout: 3
     Handler: app.lambda_handler
     Runtime: python3.8
-
-
+    Tags:
+      pattern: multi-bus-multi-account-pattern
+      
 Parameters:
   EventBusName:
     Description: Name of the blue service app event bus
     Type: String
-    Default: blue-service-event-bus
+    Default: blue-service-event-bus-multi-bus
 
   PurpleServiceEventBusArn:
     Description: ARN of the Purple service event bus to add rules
@@ -25,8 +25,15 @@ Parameters:
     Description: Account Id Purple service event bus to add rules
     Type: String
 
-Resources:
+  OrangeServiceEventBusArn:
+    Description: ARN of the Orange service event bus to add rules
+    Type: String
 
+  OrangeServiceAccountNo:
+    Description: Account Id Orange service event bus to add rules
+    Type: String
+
+Resources:
   # Event bus for blue service
   BlueServiceEventBus: 
     Type: AWS::Events::EventBus
@@ -50,15 +57,16 @@ Resources:
           StringEquals:
             "events:source": ["com.exampleCorp.BlueService"]
 
-  PurpleServiceRuleCreationStatement:
+  BlueEventBusRuleCreationStatement:
     Type: AWS::Events::EventBusPolicy
     Properties:
       EventBusName: !Ref BlueServiceEventBus
-      StatementId: "PurpleServiceRuleCreation"
+      StatementId: "AllServiceRuleCreation"
       Statement:
         Effect: "Allow"
         Principal:
-          AWS: !Sub arn:aws:iam::${PurpleServiceAccountNo}:root
+          AWS:
+            - !Sub arn:aws:iam::${PurpleServiceAccountNo}:root
         Action:
           - "events:PutRule"
           - "events:DeleteRule"
@@ -72,7 +80,7 @@ Resources:
         Condition:
           StringEqualsIfExists:
             "events:creatorAccount": "${aws:PrincipalAccount}"
-            "events:source": "com.exampleCorp.PurpleService"
+            "events:source": ["com.exampleCorp.BlueService"]
 
   BlueServicePublisherE1:
     Type: AWS::Serverless::Function
@@ -87,7 +95,7 @@ Resources:
               Resource: !GetAtt BlueServiceEventBus.Arn
       Environment:
         Variables:
-          BLUE_SERVICE_EVENT_BUS_ARN: !Ref BlueServiceEventBusArn
+          EVENT_BUS_ARN: !Ref BlueServiceEventBus
 
 
   BlueServiceSubscriberE2:
@@ -106,10 +114,10 @@ Resources:
                 - Event2
 
   # Rule that is placed on the Purple event bus for Event 2
-  BlueServiceEvent2SubscriptionRule:
+  BlueServiceE2SubscriptionRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: BlueEvent2Subscription
+      Name: BlueE2Subscription
       Description: Cross account rule created by Blue service for event 2
       EventBusName: !Ref PurpleServiceEventBusArn # ARN of the Purple service event bus
       EventPattern:
@@ -124,8 +132,6 @@ Resources:
           RoleArn: !GetAtt PurpleServiceEventBusToBlueServiceEventBusRole.Arn
           DeadLetterConfig:
             Arn: !GetAtt BlueServiceEventBusDlq.Arn
-          RetryPolicy:
-            MaximumRetryAttempts: 5
 
   # This IAM role allows EventBridge to assume the permissions necessary to send events 
   # from the Purple event bus to the Blue service event bus. No resource policy is required
@@ -173,18 +179,18 @@ Resources:
               Service: "events.amazonaws.com"
             Condition:
               ArnEquals:
-                "aws:SourceArn": !GetAtt BlueServiceEvent2SubscriptionRule.Arn
+                "aws:SourceArn": !GetAtt BlueServiceE2SubscriptionRule.Arn
 
 Outputs:
+  BlueServiceEventBusArn:
+    Description: The ARN of the Purple event bus
+    Value: !GetAtt BlueServiceEventBus.Arn
   BlueServicePublisherE1:
     Description: "Lambda function ARN for blue service publishing event 1"
     Value: !GetAtt BlueServicePublisherE1.Arn
-  BlueServicePublisherE1IamRole:
-    Description: "Implicit IAM Role created for BlueServicePublisherE1 function"
-    Value: !GetAtt BlueServicePublisherE1Role.Arn
   BlueServiceSubscriberE2:
     Description: "Lambda function ARN for purple service subscriber to event 2"
     Value: !GetAtt BlueServiceSubscriberE2.Arn
-  BlueServiceSubscriberE2IamRole:
-    Description: "Implicit IAM Role created for BlueServiceSubscriberE2 function"
-    Value: !GetAtt BlueServiceSubscriberE2Role.Arn
+  BlueE2Subscription:
+    Description: Rule ARN for blue service event 2 subscription
+    Value: !GetAtt BlueServiceE2SubscriptionRule.Arn

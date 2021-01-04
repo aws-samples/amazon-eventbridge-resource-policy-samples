@@ -11,9 +11,40 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import os
 import json
+import boto3
 
+# pull the devops event bus arn from an environment variable where 
+# DEVOPS_EVENT_BUS_ARN = 'arn:aws:events:us-east-1:[ACCOUNT-B]:event-bus/devops-event-bus'
+EVENT_BUS_ARN = os.environ['DEVOPS_EVENT_BUS_ARN'] 
+
+# Create EventBridge client
+events = boto3.client('events')
 
 def lambda_handler(event, context):
-    print(event)
-    return event
+
+  # new order created event detail
+  eventDetail  = {
+    "orangeId": "456",
+    "orangeDate": "2020-12-10T22:01:02Z",
+    "orangeFoo": "bar",
+  }
+
+  try:
+    # Put an event
+    response = events.put_events(
+        Entries=[
+            {
+                'EventBusName': EVENT_BUS_ARN,
+                'Source': 'com.exampleCorp.OrangeService',
+                'DetailType': 'Event3',
+                'Detail': json.dumps(eventDetail)
+            }
+        ]
+    )
+    print(response['Entries'])
+    print(f"Event sent to the event bus {EVENT_BUS_ARN}")
+    print(f"EventID is {response['Entries'][0]['EventId']}")
+  except Exception as e:
+      print(e)

@@ -1,0 +1,196 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Orange service app for for multi-bus, multi-account-pattern
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    Handler: app.lambda_handler
+    Runtime: python3.8
+    Tags:
+      pattern: multi-bus-multi-account-pattern
+
+Parameters:
+  EventBusName:
+    Description: Name of the orange service app event bus
+    Type: String
+    Default: orange-service-event-bus-multi-bus
+
+  BlueServiceEventBusArn:
+    Description: ARN of the Blue service event bus to add rules
+    Type: String
+
+  BlueServiceAccountNo:
+    Description: Account Id Blue service event bus to add rules
+    Type: String
+
+  PurpleServiceEventBusArn:
+    Description: ARN of the Purple service event bus to add rules
+    Type: String
+
+  PurpleServiceAccountNo:
+    Description: Account Id Purple service event bus to add rules
+    Type: String
+    
+Resources:
+
+  # Event bus for orange service.
+  OrangeServiceEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: !Ref EventBusName
+
+  # Resource policy for Orange service event bus
+  OrangeServicePublishStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref OrangeServiceEventBus
+      StatementId: "OrangeServicePublish"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: 
+            - !Sub arn:aws:iam::${AWS::AccountId}:root
+        Action: "events:PutEvents"
+        Resource: !GetAtt OrangeServiceEventBus.Arn
+        Condition:
+          StringEquals:
+            "events:source": ["com.exampleCorp.OrangeService"]
+
+  OrangeEventBusRuleCreationStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref OrangeServiceEventBus
+      StatementId: "AllServiceRuleCreation"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS:
+            - !Sub arn:aws:iam::${PurpleServiceAccountNo}:root
+        Action:
+          - "events:PutRule"
+          - "events:DeleteRule"
+          - "events:DescribeRule"
+          - "events:DisableRule"
+          - "events:EnableRule"
+          - "events:PutTargets"
+          - "events:RemoveTargets"
+        Resource:
+          - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${OrangeServiceEventBus.Name}/*
+        Condition:
+          StringEqualsIfExists:
+            "events:creatorAccount": "${aws:PrincipalAccount}"
+            "events:source": ["com.exampleCorp.OrangeService"]
+
+  OrangeServicePublisherE3:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: orange_p_e3/
+      Policies:
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: "*" 
+      Environment:
+        Variables:
+          EVENT_BUS_ARN: !Ref OrangeServiceEventBus
+
+  OrangeServiceSubscriberE2:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: orange_s_e2/
+      Events:
+        OrangeE2Rule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref OrangeServiceEventBus
+            Pattern:
+              source:
+                - com.exampleCorp.PurpleService
+              detail-type:
+                - Event2
+
+  # Rule that is placed on the Orange event bus for Event 2
+  OrangeServiceE2SubscriptionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: OrangeE2Subscription
+      Description: Cross account rule created by Orange service for event 2
+      EventBusName: !Ref PurpleServiceEventBusArn # ARN of the purple event bus
+      EventPattern:
+        source:
+          - com.exampleCorp.PurpleService
+        detail-type:
+          - Event2
+      State: ENABLED
+      Targets: 
+        - Id: SendEvent2ToOrangeServiceEventBus
+          Arn: !GetAtt OrangeServiceEventBus.Arn
+          RoleArn: !GetAtt ServiceEventBusToOrangeEventBusRole.Arn
+          DeadLetterConfig:
+            Arn: !GetAtt OrangeServiceEventBusDlq.Arn
+
+  # This IAM role allows EventBridge to assume the permissions necessary to send events 
+  # from the Purple event bus to the Orange service event bus. No resource policy is required
+  # on the Orange service event bus.
+  ServiceEventBusToOrangeEventBusRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - events.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:   
+        - PolicyName: PutEventsOnOrangeServiceEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'events:PutEvents'
+                Resource: !GetAtt OrangeServiceEventBus.Arn
+
+  # Orange service event bus targe DLQ 
+  OrangeServiceEventBusDlq:
+    Type: AWS::SQS::Queue
+
+  # SQS resource policy required to allow targets on service buses to send failed messages to target DLQ
+  OrangeServiceEventBusDlqPolicy: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref OrangeServiceEventBusDlq
+      PolicyDocument: 
+        Statement: 
+          - Action: 
+              - "SQS:SendMessage" 
+            Effect: "Allow"
+            Resource: !GetAtt OrangeServiceEventBusDlq.Arn
+            Principal:  
+              Service: "events.amazonaws.com"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !GetAtt OrangeServiceE2SubscriptionRule.Arn
+         
+Outputs:
+  OrangeServiceEventBusArn:
+    Description: The ARN of the Orange event bus
+    Value: !GetAtt OrangeServiceEventBus.Arn
+  OrangeServicePublisherE3:
+    Description: Lambda function ARN for Orange service publishing event 3
+    Value: !GetAtt OrangeServicePublisherE3.Arn
+  OrangeServiceSubscriberE2:
+    Description: Lambda function ARN for orange service subscriber to event 2
+    Value: !GetAtt OrangeServiceSubscriberE2.Arn
+  OrangeE2Subscription:
+    Description: Rule ARN for orange service event 2 subscription
+    Value: !GetAtt OrangeServiceE2SubscriptionRule.Arn
