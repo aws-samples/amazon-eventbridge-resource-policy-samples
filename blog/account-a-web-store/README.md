@@ -35,7 +35,7 @@ The first command will build the source of your application. The second command 
 
 The template takes one parameters:
 
-* **CentralEventBusArn:** the ARN of the central event bus in account B
+* **`CentralEventBusArn`**: the ARN of the central event bus in account B
 
 ## Cleanup
 
