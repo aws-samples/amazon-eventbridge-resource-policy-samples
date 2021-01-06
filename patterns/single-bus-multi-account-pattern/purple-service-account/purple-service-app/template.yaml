@@ -81,7 +81,7 @@ Resources:
   PurpleServiceEvent1SubscriptionRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: PurpleEvent1Subscription
+      Name: PurpleE1Subscription
       Description: Cross account rule created by Blue service for event 2
       EventBusName: !Ref DevOpsEventBusArn # ARN of the devops event bus
       EventPattern:
@@ -101,7 +101,7 @@ Resources:
   PurpleServiceEvent3SubscriptionRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: PurpleEvent3Subscription
+      Name: PurpleE3Subscription
       Description: Cross account rule created by Blue service for event 2
       EventBusName: !Ref DevOpsEventBusArn # ARN of the devops event bus
       EventPattern:

@@ -65,7 +65,7 @@ Resources:
   BlueServiceEvent2SubscriptionRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: Event2Subscription
+      Name: BlueE2Subscription
       Description: Cross account rule created by Blue service for event 2
       EventBusName: !Ref DevOpsEventBusArn # ARN of the devops event bus
       EventPattern:

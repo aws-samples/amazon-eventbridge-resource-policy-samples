@@ -62,7 +62,7 @@ Resources:
   OrangeServiceEvent2SubscriptionRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: OrangeEvent2Subscription
+      Name: OrangeE2Subscription
       Description: Cross account rule created by Orange service for event 2
       EventBusName: !Ref DevOpsEventBusArn # ARN of the devops event bus
       EventPattern:
