@@ -1,0 +1,93 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Orange service app subscriptions for for multi-bus, multi-account-pattern 
+
+Parameters:
+
+  OrangeServiceEventBusArn:
+    Description: Arn of the orange service app event bus
+    Type: String
+  
+  OrangeServiceEventBusDlqUrl:
+    Description: URL of the blue service Dead Letter Queue
+    Type: String
+
+  OrangeServiceEventBusDlqArn:
+    Description: ARN of the orange service Dead Letter Queue
+    Type: String
+
+  PurpleServiceEventBusArn:
+    Description: ARN of the Purple service event bus to add rules
+    Type: String
+
+
+Resources:
+
+  # Rule that is placed on the Orange event bus for Event 2
+  OrangeServiceE2SubscriptionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: OrangeE2Subscription
+      Description: Cross account rule created by Orange service for event 2
+      EventBusName: !Ref PurpleServiceEventBusArn # ARN of the purple event bus
+      EventPattern:
+        source:
+          - com.exampleCorp.PurpleService
+        detail-type:
+          - Event2
+      State: ENABLED
+      Targets: 
+        - Id: SendEvent2ToOrangeServiceEventBus
+          Arn: !Ref OrangeServiceEventBusArn
+          RoleArn: !GetAtt ServiceEventBusToOrangeEventBusRole.Arn
+          DeadLetterConfig:
+            Arn: !Ref OrangeServiceEventBusDlqArn
+
+  # This IAM role allows EventBridge to assume the permissions necessary to send events 
+  # from the Purple event bus to the Orange service event bus. No resource policy is required
+  # on the Orange service event bus.
+  ServiceEventBusToOrangeEventBusRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - events.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:   
+        - PolicyName: PutEventsOnOrangeServiceEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'events:PutEvents'
+                Resource: !Ref OrangeServiceEventBusArn
+
+
+  # SQS resource policy required to allow targets on service buses to send failed messages to target DLQ
+  OrangeServiceEventBusDlqPolicy: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref OrangeServiceEventBusDlqUrl
+      PolicyDocument: 
+        Statement: 
+          - Action: 
+              - "SQS:SendMessage" 
+            Effect: "Allow"
+            Resource: !Ref OrangeServiceEventBusDlqArn
+            Principal:  
+              Service: "events.amazonaws.com"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !GetAtt OrangeServiceE2SubscriptionRule.Arn
+
+Outputs:
+  OrangE2Subscription:
+    Description: Rule ARN for blue service event 2 subscription
+    Value: !GetAtt OrangeServiceE2SubscriptionRule.Arn

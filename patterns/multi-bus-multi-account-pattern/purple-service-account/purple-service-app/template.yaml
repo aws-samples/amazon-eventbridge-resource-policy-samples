@@ -18,16 +18,8 @@ Parameters:
     Type: String
     Default: purple-service-event-bus-multi-bus
 
-  BlueServiceEventBusArn:
-    Description: ARN of the Blue service event bus to add rules
-    Type: String
-
   BlueServiceAccountNo:
     Description: Account Id Blue service event bus to add rules
-    Type: String
-
-  OrangeServiceEventBusArn:
-    Description: ARN of the Orange service event bus to add rules
     Type: String
 
   OrangeServiceAccountNo:
@@ -130,95 +122,10 @@ Resources:
               detail-type:
                 - Event3
 
-  # Rule that is placed on the Purple event bus for Event 1
-  PurpleServiceE1SubscriptionRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: PurpleE1Subscription
-      Description: Cross account rule created by Purple service for event 1
-      EventBusName: !Ref BlueServiceEventBusArn # ARN of the blue event bus
-      EventPattern:
-        source:
-          - com.exampleCorp.BlueService
-        detail-type:
-          - Event1
-      State: ENABLED
-      Targets: 
-        - Id: SendEvent1ToPurpleServiceEventBus
-          Arn: !GetAtt PurpleServiceEventBus.Arn
-          RoleArn: !GetAtt ServiceEventBusToPurpleServiceEventBusRole.Arn
-          DeadLetterConfig:
-            Arn: !GetAtt PurpleServiceEventBusDlq.Arn
-
-  # Rule that is placed on the DevOps event bus for Event 2
-  PurpleServiceE3SubscriptionRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: PurpleE3Subscription
-      Description: Cross account rule created by Blue service for event 2
-      EventBusName: !Ref OrangeServiceEventBusArn # ARN of the orange event bus
-      EventPattern:
-        source:
-          - com.exampleCorp.OrangeService
-        detail-type:
-          - Event3
-      State: ENABLED
-      Targets: 
-        - Id: SendEvent3ToPurpleServiceEventBus
-          Arn: !GetAtt PurpleServiceEventBus.Arn
-          RoleArn: !GetAtt ServiceEventBusToPurpleServiceEventBusRole.Arn
-          DeadLetterConfig:
-            Arn: !GetAtt PurpleServiceEventBusDlq.Arn
-
-  # This IAM role allows EventBridge to assume the permissions necessary to send events 
-  # from the DevOps event bus to the Blue service event bus. No resource policy is required
-  # on the Blue service event bus.
-  ServiceEventBusToPurpleServiceEventBusRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-              - events.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      Policies:   
-        - PolicyName: PutEventsOnPurpleServiceEventBus
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action: 'events:PutEvents'
-                Resource: !GetAtt PurpleServiceEventBus.Arn
-
-  # Blue service event bus targe DLQ 
+  # Purple service event bus targe DLQ 
   PurpleServiceEventBusDlq:
     Type: AWS::SQS::Queue
 
-  # SQS resource policy required to allow targets on service buses to send failed messages to target DLQ
-  PurpleServiceEventBusDlqPolicy: 
-    Type: AWS::SQS::QueuePolicy
-    Properties: 
-      Queues: 
-        - !Ref PurpleServiceEventBusDlq
-      PolicyDocument: 
-        Statement: 
-          - Action: 
-              - "SQS:SendMessage" 
-            Effect: "Allow"
-            Resource: !GetAtt PurpleServiceEventBusDlq.Arn
-            Principal:  
-              Service: "events.amazonaws.com"
-            Condition:
-              ArnEquals:
-                "aws:SourceArn": [
-                  !GetAtt PurpleServiceE1SubscriptionRule.Arn, 
-                  !GetAtt PurpleServiceE3SubscriptionRule.Arn
-                ]
 
 Outputs:
   PurpleServiceEventBusArn:
@@ -233,9 +140,9 @@ Outputs:
   PurpleServiceSubscriberE3:
     Description: Lambda function ARN for purple service subscriber to event 3
     Value: !GetAtt PurpleServiceSubscriberE3.Arn
-  PurpleE1Subscription:
-    Description: Rule ARN for purple service event 1 subscription
-    Value: !GetAtt PurpleServiceE1SubscriptionRule.Arn
-  PurpleE3Subscription:
-    Description: Rule ARN for purple service event 3 subscription
-    Value: !GetAtt PurpleServiceE3SubscriptionRule.Arn
+  PurpleServiceEventBusDlqUrl:
+    Description: URL of the SQS Queue for rules DeadLetterConfig
+    Value: !Ref PurpleServiceEventBusDlq
+  PurpleServiceEventBusDlqArn:
+    Description: ARN of the SQS Queue for rules DeadLetterConfig
+    Value: !GetAtt PurpleServiceEventBusDlq.Arn

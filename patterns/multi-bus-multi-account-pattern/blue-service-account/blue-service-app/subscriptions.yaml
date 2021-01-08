@@ -1,0 +1,90 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Blue service app subscriptions for for multi-bus, multi-account-pattern 
+
+Parameters:
+  BlueServiceEventBusArn:
+    Description: Name of the blue service app event bus
+    Type: String
+    Default: blue-service-event-bus-multi-bus
+
+  BlueServiceEventBusDlqUrl:
+    Description: URL of the blue service Dead Letter Queue
+    Type: String
+
+  BlueServiceEventBusDlqArn:
+    Description: ARN of the blue service Dead Letter Queue
+    Type: String
+
+  PurpleServiceEventBusArn:
+    Description: ARN of the Purple service event bus to add rules
+    Type: String
+
+Resources:
+  # Rule that is placed on the Purple event bus for Event 2
+  BlueServiceE2SubscriptionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: BlueE2Subscription
+      Description: Cross account rule created by Blue service for event 2
+      EventBusName: !Ref PurpleServiceEventBusArn # ARN of the Purple service event bus
+      EventPattern:
+        source:
+          - com.exampleCorp.PurpleService
+        detail-type:
+          - Event2
+      State: ENABLED
+      Targets: 
+        - Id: SendEvent2ToBlueServiceEventBus
+          Arn: !Ref BlueServiceEventBusArn
+          RoleArn: !GetAtt PurpleServiceEventBusToBlueServiceEventBusRole.Arn
+          DeadLetterConfig:
+            Arn: !Ref BlueServiceEventBusDlqArn
+
+  # This IAM role allows EventBridge to assume the permissions necessary to send events 
+  # from the Purple event bus to the Blue service event bus. No resource policy is required
+  # on the Blue service event bus.
+  PurpleServiceEventBusToBlueServiceEventBusRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - events.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:   
+        - PolicyName: PutEventsOnBlueServiceEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:            
+              - Effect: Allow
+                Action: 'events:PutEvents'
+                Resource: !Ref BlueServiceEventBusArn
+
+  # SQS resource policy required to allow target on devops bus to send failed messages to target DLQ
+  BlueServiceEventBusDlqPolicy: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref BlueServiceEventBusDlqUrl
+      PolicyDocument: 
+        Statement: 
+          - Action: 
+              - "SQS:SendMessage" 
+            Effect: "Allow"
+            Resource: !Ref BlueServiceEventBusDlqArn
+            Principal:  
+              Service: "events.amazonaws.com"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !GetAtt BlueServiceE2SubscriptionRule.Arn
+
+Outputs:
+  BlueE2Subscription:
+    Description: Rule ARN for blue service event 2 subscription
+    Value: !GetAtt BlueServiceE2SubscriptionRule.Arn
