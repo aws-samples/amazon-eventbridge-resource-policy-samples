@@ -4,19 +4,19 @@
 
 This repository contains sample implementations for Amazon EventBridge resource policies.
 
-## [1. E-commerce example walk-through](blog/README.md)
+## 1. E-commerce example walk-through
 
 This sample application walks you through how to use Amazon EventBridge resource policies as presented in [feature release blog post](https://aws.amazon.com/blogs/compute/simplifying-cross-account-access-with-amazon-eventbridge-resource-policies)
 
-Get started with the [**e-commerce sample >**](blog/BLOG.md)
+### Get started with the [e-commerce sample >>](blog/README.md)
 
 ![Walkthrough architecture](docs/images/ecommerce-example.png "Walkthrough architecture")
 
-## [2. Multi-account design patterns](patterns/README.md)
+## 2. Multi-account design patterns
 
 The samples in this section provide sample implementations using **"single-bus, multi-account"**, and **"multi-bus, multi-account"** patterns as presented in the AWS re:Invent 2020 session [Building event-driven applications with Amazon EventBridge](https://virtual.awsevents.com/media/t/1_ynykxz80/186983983) which is available on demand.
 
-Get started with the [**multi-account design patterns >**](patterns/PATTERNS.md)
+### Get started with the [multi-account design patterns >>](patterns/README.md)
 
 ![Walkthrough architecture](docs/images/reinvent.png "Building event-driven applications with Amazon EventBridge")
 
