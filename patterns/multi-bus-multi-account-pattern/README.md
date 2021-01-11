@@ -127,11 +127,29 @@ git clone https://github.com/aws-samples/amazon-eventbridge-resource-policy-samp
 
     ``` bash
     aws cloudformation create-stack --stack-name multi-bus-orange-service-apps-subscriptions /
-    --template-body file://subscriptions.yaml /
-    --capabilities CAPABILITY_IAM /
-    --parameters ParameterKey=OrangeServiceEventBusArn,ParameterValue=arn:aws:events:ap-southeast-2:333333333333:event-bus/orange-service-event-bus-multi-bus 
-                 ParameterKey=OrangeServiceEventBusDlqUrl,ParameterValue=https://sqs.ap-southeast-2.amazonaws.com/333333333333/multi-bus-orange-service-apps-OrangeServiceEventBusDlq-EGKF5KW7ZDI8 
-                 ParameterKey=OrangeServiceEventBusDlqArn,ParameterValue=arn:aws:sqs:ap-southeast-2:333333333333:multi-bus-orange-service-apps-OrangeServiceEventBusDlq-EGKF5KW7ZDI8 
-                 ParameterKey=PurpleServiceEventBusArn,ParameterValue=arn:aws:events:ap-southeast-2:222222222222:event-bus/purple-service-event-bus-multi-bus
+        --template-body file://subscriptions.yaml /
+        --capabilities CAPABILITY_IAM /
+        --parameters ParameterKey=OrangeServiceEventBusArn,ParameterValue=arn:aws:events:ap-southeast-2:333333333333:event-bus/orange-service-event-bus-multi-bus 
+                    ParameterKey=OrangeServiceEventBusDlqUrl,ParameterValue=https://sqs.ap-southeast-2.amazonaws.com/333333333333/multi-bus-orange-service-apps-OrangeServiceEventBusDlq-EGKF5KW7ZDI8 
+                    ParameterKey=OrangeServiceEventBusDlqArn,ParameterValue=arn:aws:sqs:ap-southeast-2:333333333333:multi-bus-orange-service-apps-OrangeServiceEventBusDlq-EGKF5KW7ZDI8 
+                    ParameterKey=PurpleServiceEventBusArn,ParameterValue=arn:aws:events:ap-southeast-2:222222222222:event-bus/purple-service-event-bus-multi-bus
     ```
 
+1. Verify that you have all off the rules deployed correctly.
+
+    ```bash
+    aws events list-rules --event-bus-name blue-service-event-bus-multi-bus
+    ```
+
+    if deployed correctly, you should see the following rule on the Blue service event bus.
+
+    ```json
+    {
+        "Name": "PurpleE1Subscription",
+        "Arn": "arn:aws:events:ap-southeast-2:111111111111:rule/blue-service-event-bus-multi-bus/PurpleE1Subscription",
+        "EventPattern": "{\"detail-type\":[\"Event1\"],\"source\":[\"com.exampleCorp.BlueService\"]}",
+        "State": "ENABLED",
+        "Description": "Cross account rule created by Purple service for event 1",
+        "EventBusName": "blue-service-event-bus-multi-bus"
+    }
+    ```
