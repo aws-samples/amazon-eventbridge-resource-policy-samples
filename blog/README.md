@@ -30,7 +30,7 @@ git clone https://github.com/aws-samples/amazon-eventbridge-resource-policy-samp
 
 ## Getting started
 
-To get started follow the instructions on [deploying the central event bus to account B](blog/account-b-central-bus/README.md)
+To get started follow the instructions on [deploying the central event bus to account B](account-b-central-bus/README.md)
 
 ## Next Steps
 
