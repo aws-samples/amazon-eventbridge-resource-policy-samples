@@ -17,7 +17,7 @@ import boto3
 
 # pull the devops event bus arn from an environment variable where 
 # DEVOPS_EVENT_BUS_ARN = 'arn:aws:events:us-east-1:[ACCOUNT-B]:event-bus/devops-event-bus'
-EVENT_BUS_ARN = os.environ['DEVOPS_EVENT_BUS_ARN'] 
+EVENT_BUS_ARN = os.environ['EVENT_BUS_ARN'] 
 
 # Create EventBridge client
 events = boto3.client('events')

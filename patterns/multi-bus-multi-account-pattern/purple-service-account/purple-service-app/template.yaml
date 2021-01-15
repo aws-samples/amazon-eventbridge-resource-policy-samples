@@ -118,7 +118,7 @@ Resources:
             EventBusName: !Ref PurpleServiceEventBus
             Pattern:
               source:
-                - com.exampleCorp.PurpleService
+                - com.exampleCorp.OrangeService
               detail-type:
                 - Event3
 
