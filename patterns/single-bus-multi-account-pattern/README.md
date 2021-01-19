@@ -89,7 +89,7 @@ git clone https://github.com/aws-samples/amazon-eventbridge-resource-policy-samp
     Stack Name [sam-app]: single-bus-blue-service-apps
     AWS Region [us-east-1]:
     Parameter EventBusName [blue-service-event-bus]:
-    Parameter DevOpsEventBusArn []: arn:aws:events:us-east-1:222222222222:event-bus/devops-event-bus
+    Parameter DevOpsEventBusArn []: arn:aws:events:[AWS REGION]:222222222222:event-bus/devops-event-bus
     #Shows you resources changes to be deployed and require a 'Y' to initiate deploy
     Confirm changes before deploy [y/N]:
     #SAM needs permission to be able to create roles to connect to the resources in your template
@@ -100,3 +100,90 @@ git clone https://github.com/aws-samples/amazon-eventbridge-resource-policy-samp
     ```
 
 1. Follow the same process for the other services.
+
+### Starting the services
+
+You can test the integrations by invoking the respective "publishing" functions.
+
+1. Copy the the function names from the respective AWS Cloudformation stacks deployed across the service accounts.
+
+    ``` bash
+    aws cloudformation describe-stacks //
+        --stack-name [single-bus-[COLOUR]-service-apps] 
+        --query 'Stacks[0]'.Outputs
+    ```
+
+1. Invoke the functions
+
+    **Blue Service Publisher E1**
+
+    ```bash
+    aws lambda invoke //
+        --function-name [BlueServicePublisherE1] //
+        --invocation-type Event //
+        --payload "{}" out.txt //
+        --region [AWS REGION]
+        --profile [BLUE SERVICE PROFILE]
+    ```
+
+    **Purple Service Publisher E2**
+
+    ```bash
+    aws lambda invoke //
+        --function-name [PurpleServicePublisherE2] //
+        --invocation-type Event //
+        --payload "{}" out.txt //
+        --region [AWS REGION] //
+        --profile [PURPLE SERVICE PROFILE]
+    ```
+
+    **Orange Service Publisher E3**
+
+    ```bash
+    aws lambda invoke //
+        --function-name [OrangeServicePublisherE3] //
+        --invocation-type Event //
+        --payload "{}" out.txt //
+        --region [AWS REGION] //
+        --profile [ORANGE SERVICE PROFILE]
+    ```
+
+1. The subscriber functions log the event that they process to Amazon CloudWatch Logs. You can use SAM CLI to view the log entrees that the subscriber function emit to their respective logs. Here are some example of how to do that.
+
+    **Blue Service Subscriber E2**
+
+    ```bash
+    sam logs -t -n BlueServiceSubscriberE2 //
+        --stack-name single-bus-blue-service-apps //
+        --filter com.exampleCorp.PurpleService //
+        --region [AWS REGION] //
+        --profile [BLUE SERVICE PROFILE]
+    ```
+
+    **Purple Service Subscriber E1 & E3**
+
+    ```bash
+    sam logs -t -n PurpleServiceSubscriberE1 //
+        --stack-name single-bus-purple-service-apps //
+        --filter com.exampleCorp.BlueService //
+        --region [AWS REGION] //
+        --profile [PURPLE SERVICE PROFILE]
+    ```
+
+    ```bash
+    sam logs -t -n PurpleServiceSubscriberE3 //
+        --stack-name single-bus-purple-service-apps //
+        --filter com.exampleCorp.OrangeService //
+        --region [AWS REGION] //
+        --profile [PURPLE SERVICE PROFILE]
+    ```
+
+    **Orange Service Subscriber E2**
+
+    ```bash
+    sam logs -t -n OrangeServiceSubscriberE2 //
+        --stack-name single-bus-orange-service-apps //
+        --filter com.exampleCorp.PurpleService //
+        --region [AWS REGION] //
+        --profile [ORANGE SERVICE PROFILE]
+    ```
