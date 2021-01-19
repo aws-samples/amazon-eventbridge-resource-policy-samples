@@ -127,14 +127,14 @@ Resources:
          
 Outputs:
   OrangeServicePublisherE3:
-    Description: "Lambda function ARN for Orange service publishing event 3"
-    Value: !GetAtt OrangeServicePublisherE3.Arn
-  OrangeServicePublisherE3IamRole:
-    Description: "Implicit IAM Role created for OrangeServicePublisherE3 function"
-    Value: !GetAtt OrangeServicePublisherE3Role.Arn
+    Description: Lambda function name for Orange service publishing event 3
+    Value: !Ref OrangeServicePublisherE3
   OrangeServiceSubscriberE2:
-    Description: "Lambda function ARN for orange service subscriber to event 2"
-    Value: !GetAtt OrangeServiceSubscriberE2.Arn
-  OrangeServiceSubscriberE2IamRole:
-    Description: "Implicit IAM Role created for OrangeServiceSubscriberE2 function"
-    Value: !GetAtt OrangeServiceSubscriberE2Role.Arn
+    Description: Lambda function name for orange service subscriber to event 2
+    Value: !Ref OrangeServiceSubscriberE2
+  OrangeServiceEventBusDlqUrl:
+    Description: URL of the SQS Queue for rules DeadLetterConfig
+    Value: !Ref OrangeServiceEventBusDlq
+  OrangeServiceEventBusDlqArn:
+    Description: ARN of the SQS Queue for rules DeadLetterConfig
+    Value: !GetAtt OrangeServiceEventBusDlq.Arn

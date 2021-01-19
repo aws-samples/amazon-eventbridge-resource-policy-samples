@@ -116,11 +116,11 @@ Outputs:
     Description: The ARN of the Orange event bus
     Value: !GetAtt OrangeServiceEventBus.Arn
   OrangeServicePublisherE3:
-    Description: Lambda function ARN for Orange service publishing event 3
-    Value: !GetAtt OrangeServicePublisherE3.Arn
+    Description: Lambda function name for Orange service publishing event 3
+    Value: !Ref OrangeServicePublisherE3
   OrangeServiceSubscriberE2:
-    Description: Lambda function ARN for orange service subscriber to event 2
-    Value: !GetAtt OrangeServiceSubscriberE2.Arn
+    Description: Lambda function name for orange service subscriber to event 2
+    Value: !Ref OrangeServiceSubscriberE2
   OrangeServiceEventBusDlqUrl:
     Description: URL of the SQS Queue for rules DeadLetterConfig
     Value: !Ref OrangeServiceEventBusDlq

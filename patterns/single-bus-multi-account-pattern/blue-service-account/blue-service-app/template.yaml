@@ -130,14 +130,14 @@ Resources:
 
 Outputs:
   BlueServicePublisherE1:
-    Description: "Lambda function ARN for blue service publishing event 1"
-    Value: !GetAtt BlueServicePublisherE1.Arn
-  BlueServicePublisherE1IamRole:
-    Description: "Implicit IAM Role created for BlueServicePublisherE1 function"
-    Value: !GetAtt BlueServicePublisherE1Role.Arn
+    Description: Lambda function name for blue service publishing event 1
+    Value: !Ref BlueServicePublisherE1
   BlueServiceSubscriberE2:
-    Description: "Lambda function ARN for purple service subscriber to event 2"
-    Value: !GetAtt BlueServiceSubscriberE2.Arn
-  BlueServiceSubscriberE2IamRole:
-    Description: "Implicit IAM Role created for BlueServiceSubscriberE2 function"
-    Value: !GetAtt BlueServiceSubscriberE2Role.Arn
+    Description: Lambda function name for purple service subscriber to event 2
+    Value: !Ref BlueServiceSubscriberE2
+  BlueServiceEventBusDlqUrl:
+    Description: URL of the SQS Queue for rules DeadLetterConfig
+    Value: !Ref BlueServiceEventBusDlq
+  BlueServiceEventBusDlqArn:
+    Description: ARN of the SQS Queue for rules DeadLetterConfig
+    Value: !GetAtt BlueServiceEventBusDlq.Arn

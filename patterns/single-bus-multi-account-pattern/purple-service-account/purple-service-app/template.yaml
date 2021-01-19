@@ -169,20 +169,17 @@ Resources:
 
 Outputs:
   PurpleServicePublisherE2:
-    Description: "Lambda function ARN for purple service publishing event 2"
-    Value: !GetAtt PurpleServicePublisherE2.Arn
-  PurpleServicePublisherE2IamRole:
-    Description: "Implicit IAM Role created for PurpleServicePublisherE2 function"
-    Value: !GetAtt PurpleServicePublisherE2Role.Arn
+    Description: Lambda function name for purple service publishing event 2
+    Value: !Ref PurpleServicePublisherE2
   PurpleServiceSubscriberE1:
-    Description: "Lambda function ARN for purple service subscriber to event 1"
-    Value: !GetAtt PurpleServiceSubscriberE1.Arn
-  PurpleServiceSubscriberE1IamRole:
-    Description: "Implicit IAM Role created for PurpleServiceSubscriberE1 function"
-    Value: !GetAtt PurpleServiceSubscriberE1Role.Arn
+    Description: Lambda function name for purple service subscriber to event 1
+    Value: !Ref PurpleServiceSubscriberE1
   PurpleServiceSubscriberE3:
-    Description: "Lambda function ARN for purple service subscriber to event 3"
-    Value: !GetAtt PurpleServiceSubscriberE3.Arn
-  PurpleServiceSubscriberE3IamRole:
-    Description: "Implicit IAM Role created for PurpleServiceSubscriberE3 function"
-    Value: !GetAtt PurpleServiceSubscriberE3Role.Arn
+    Description: Lambda function name for purple service subscriber to event 3
+    Value: !Ref PurpleServiceSubscriberE3
+  PurpleServiceEventBusDlqUrl:
+    Description: URL of the SQS Queue for rules DeadLetterConfig
+    Value: !Ref PurpleServiceEventBusDlq
+  PurpleServiceEventBusDlqArn:
+    Description: ARN of the SQS Queue for rules DeadLetterConfig
+    Value: !GetAtt PurpleServiceEventBusDlq.Arn

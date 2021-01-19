@@ -115,10 +115,10 @@ Outputs:
     Value: !GetAtt BlueServiceEventBus.Arn
   BlueServicePublisherE1:
     Description: Lambda function ARN for blue service publishing event 1
-    Value: !GetAtt BlueServicePublisherE1.Arn
+    Value: !Ref BlueServicePublisherE1
   BlueServiceSubscriberE2:
-    Description: Lambda function ARN for purple service subscriber to event 2
-    Value: !GetAtt BlueServiceSubscriberE2.Arn
+    Description: Lambda function name for purple service subscriber to event 2
+    Value: !Ref BlueServiceSubscriberE2
   BlueServiceEventBusDlqUrl:
     Description: URL of the SQS Queue for rules DeadLetterConfig
     Value: !Ref BlueServiceEventBusDlq
