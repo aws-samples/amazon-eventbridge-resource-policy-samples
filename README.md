@@ -14,7 +14,7 @@ This sample application walks you through how to use Amazon EventBridge resource
 
 ## 2. Multi-account design patterns
 
-The samples in this section provide sample implementations using **"single-bus, multi-account"**, and **"multi-bus, multi-account"** patterns as presented in the AWS re:Invent 2020 session [Building event-driven applications with Amazon EventBridge](https://virtual.awsevents.com/media/t/1_ynykxz80/186983983) which is available on demand.
+The samples in this section provide sample implementations using **"single-bus, multi-account"**, and **"multi-bus, multi-account"** patterns as presented in the AWS re:Invent 2020 session [Building event-driven applications with Amazon EventBridge](https://youtu.be/Wk0FoXTUEjo) which is available on-demand on YouTube.
 
 ### Get started with the [multi-account design patterns >>](patterns/README.md)
 
