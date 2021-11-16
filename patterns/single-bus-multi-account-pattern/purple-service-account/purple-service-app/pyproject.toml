@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "blue-service-app"
+name = "purple-service-app"
 version = "0.1.0"
-description = ""
+description = "Purple service app for single-bus multi-account pattern"
 authors = ["Stephen Liedig <sliedig@amazon.com>"]
 
 [tool.poetry.dependencies]
