@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Resource policy for custom event bus in AWS Account 333333333333 in eu-central-1 
+
+Parameters:
+  EventBusName:
+    Description: Name of the custom event bus
+    Type: String
+    
+  SecurityAccountNo:
+    Description: The account number of the securty team 
+    Type: String
+
+
+Resources:
+
+  CustomEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: !Ref EventBusName
+
+  SecurityServiceRuleCreationStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref CustomEventBus # If you omit this, the default event bus is used.
+      StatementId: "AllowSecurityToCreateRules"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: !Sub "arn:aws:iam::${SecurityAccountNo}:root"
+        Action:
+          - "events:PutRule"
+          - "events:DeleteRule"
+          - "events:DescribeRule"
+          - "events:DisableRule"
+          - "events:EnableRule"
+          - "events:PutTargets"
+          - "events:RemoveTargets"
+        Resource:
+          -  !Sub 'arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${CustomEventBus.Name}/*'
+        Condition:
+          StringEqualsIfExists:
+            "events:creatorAccount": "${aws:PrincipalAccount}"
+
+Outputs:
+  EventBus:
+    Description: EventBus
+    Value: !GetAtt CustomEventBus.Arn
