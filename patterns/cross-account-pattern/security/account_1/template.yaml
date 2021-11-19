@@ -1,0 +1,70 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    Resource policy for security event bus in AWS Account 11111111111 in ap-southeast-1
+
+Parameters:
+  SecurityEventBusName:
+    Description: Event bus receiving cross-Region events
+    Type: String
+    Default: SecurityEventBus
+
+Resources:
+  SecurityEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Ref SecurityEventBusName
+
+  #  This rule processes events coming in from cross-Region accounts
+  SecurityAnalysisRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: SecurityAnalysisRule
+      Description: Log all events to CloudWatch Logs
+      EventBusName: !GetAtt SecurityEventBus.Arn
+      EventPattern:
+        account:
+          - !Ref AWS::AccountId
+      State: ENABLED
+      RoleArn: !GetAtt WriteToCwlRole.Arn
+      Targets:
+        - Id: SendEventToSecurityAnalysisRule
+          Arn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SecurityAnalysisRuleTarget}"
+
+  SecurityAnalysisRuleTarget:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 3
+      LogGroupName: "/aws/events/SecurityAnalysisRule"
+
+  WriteToCwlRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      Policies:
+        - PolicyName: WriteToSecurityAnalysisRule
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStreams"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - !GetAtt SecurityAnalysisRuleTarget.Arn
+
+Outputs:
+  EventBus:
+    Description: EventBus
+    Value: !GetAtt SecurityEventBus.Arn

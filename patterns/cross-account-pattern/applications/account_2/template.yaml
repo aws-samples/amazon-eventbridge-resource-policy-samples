@@ -1,17 +1,17 @@
+---
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-    Resource policy for default event bus in AWS Account 222222222222 in us-east-1
+    Resource policy for default event bus in AWS Account 2 in us-east-1
 
 Parameters:
   EventBusName:
-    Description: Name of the blue service app event bus
+    Description: Name of the custom event bus
     Type: String
     
   SecurityAccountNo:
-    Description: The account number of the securty team 
+    Description: The account number where the security event bus is deployed
     Type: String
-
 
 Resources:
 
@@ -24,7 +24,7 @@ Resources:
     Type: AWS::Events::EventBusPolicy
     Properties:
       EventBusName: !Ref CustomEventBus # If you omit this, the default event bus is used.
-      StatementId: "AllowSecurityToCreateRules"
+      StatementId: "AllowCrossRegionRulesForSecurityTeam"
       Statement:
         Effect: "Allow"
         Principal:
@@ -42,7 +42,6 @@ Resources:
         Condition:
           StringEqualsIfExists:
             "events:creatorAccount": "${aws:PrincipalAccount}"
-
 
 Outputs:
   EventBus:
