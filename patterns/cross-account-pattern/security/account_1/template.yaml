@@ -24,8 +24,8 @@ Resources:
       Description: Log all events to CloudWatch Logs
       EventBusName: !GetAtt SecurityEventBus.Arn
       EventPattern:
-        account:
-          - !Ref AWS::AccountId
+        source:
+          - anything-but: com.company.security
       State: ENABLED
       RoleArn: !GetAtt WriteToCwlRole.Arn
       Targets:
