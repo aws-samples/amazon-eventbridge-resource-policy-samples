@@ -45,7 +45,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties:
       Name: SecurityAuditRuleAccount1
-      Description: Audit rule for the Secuirty team in Singapore
+      Description: Audit rule for the Security team in Singapore
       EventBusName: !Ref EventBusArnAccount1 # ARN of the default event bus in Account 1
       EventPattern:
         source:
@@ -80,7 +80,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties:
       Name: SecurityAuditRuleAccount2
-      Description: Audit rule for the Secuirty team in Singapore
+      Description: Audit rule for the Security team in Singapore
       EventBusName: !Ref EventBusArnAccount2 # ARN of the custom event bus in Account 2
       EventPattern:
         source:

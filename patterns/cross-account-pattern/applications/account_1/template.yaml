@@ -11,7 +11,7 @@ Parameters:
 
 Resources:
   
-  # NOTE: Not definining an event bus for this account as we are using the 
+  # NOTE: Not defining an event bus for this account as we are using the 
   # default event bus
 
   SecurityServiceRuleCreationStatement:
