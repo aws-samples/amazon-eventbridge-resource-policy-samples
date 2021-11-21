@@ -45,7 +45,7 @@ Resources:
       EventBusName: !Ref EventBusArnAccount3 # ARN of the custom event bus in Account 2
       EventPattern:
         source:
-          - com.company.marketing
+          - com.company.sales
       State: ENABLED
       Targets:
         - Id: SendEventToSecurityEventBusArn
