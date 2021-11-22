@@ -21,7 +21,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties:
       Name: SecurityAnalysisRule
-      Description: Log all events to CloudWatch Logs
+      Description: Analyse events from cross-Region event buses
       EventBusName: !GetAtt SecurityEventBus.Arn
       EventPattern:
         source:
