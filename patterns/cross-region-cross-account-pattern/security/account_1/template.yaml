@@ -64,6 +64,36 @@ Resources:
                 Resource:
                   - !GetAtt SecurityAnalysisRuleTarget.Arn
 
+  CWLogsResourcePolicy:
+    Type: AWS::Logs::ResourcePolicy
+    Properties:
+      PolicyName: "EventBridgeToCWLogs"
+      PolicyDocument: !Sub 
+      - >
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "EventBridgetoCWLogsPolicy",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "delivery.logs.amazonaws.com",
+                  "events.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": [
+                "${logArn}"
+              ]
+            }
+          ]
+        }
+      - logArn: !GetAtt SecurityAnalysisRuleTarget.Arn
+
 Outputs:
   EventBus:
     Description: EventBus
