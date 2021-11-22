@@ -1,0 +1,37 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Resource policy for default event bus in AWS Account 1 in us-east-1 
+
+Parameters:    
+  SecurityAccountNo:
+    Description: The account number where the security event bus is deployed
+    Type: String
+
+Resources:
+  
+  # NOTE: Not defining an event bus for this account as we are using the 
+  # default event bus
+
+  SecurityServiceRuleCreationStatement:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      StatementId: "AllowCrossRegionRulesForSecurityTeam"
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: !Sub "arn:aws:iam::${SecurityAccountNo}:root"
+        Action:
+          - "events:PutRule"
+          - "events:DeleteRule"
+          - "events:DescribeRule"
+          - "events:DisableRule"
+          - "events:EnableRule"
+          - "events:PutTargets"
+          - "events:RemoveTargets"
+        Resource:
+          - !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/*"  # default bus
+        Condition:
+          StringEqualsIfExists:
+            "events:creatorAccount": "${aws:PrincipalAccount}"

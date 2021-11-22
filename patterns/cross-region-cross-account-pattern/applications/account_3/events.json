@@ -1,0 +1,38 @@
+[
+  {
+    "Source": "com.company.sales",
+    "Detail": "{ \"customer_id\": \"1\",  \"is_preferred\": \"yes\",  \"city\": \"Perth\"}",
+    "DetailType": "Sales Notification",
+    "EventBusName": "custom-eventbus-account-3"
+  },
+  {
+    "Source": "com.company.sales",
+    "Detail": "{ \"customer_id\": \"2\",  \"is_preferred\": \"no\",  \"city\": \"Sydney\"}",
+    "DetailType": "Sales Notification",
+    "EventBusName": "custom-eventbus-account-3"
+  },
+  {
+    "Source": "com.company.sales",
+    "Detail": "{ \"customer_id\": \"3\",  \"is_preferred\": \"yes\",  \"city\": \"Brisbane\"}",
+    "DetailType": "Sales Notification",
+    "EventBusName": "custom-eventbus-account-3"
+  },
+  {
+    "Source": "com.company.sales",
+    "Detail": "{ \"customer_id\": \"4\",  \"is_preferred\": \"yes\",  \"city\": \"Perth\"}",
+    "DetailType": "Sales Notification",
+    "EventBusName": "custom-eventbus-account-3"
+  },
+  {
+    "Source": "com.company.sales",
+    "Detail": "{ \"customer_id\": \"5\",  \"is_preferred\": \"no\",  \"city\": \"Sydney\"}",
+    "DetailType": "Sales Notification",
+    "EventBusName": "custom-eventbus-account-3"
+  },
+  {
+    "Source": "com.company.sales",
+    "Detail": "{ \"customer_id\": \"6\",  \"is_preferred\": \"yes\",  \"city\": \"Melbourne\"}",
+    "DetailType": "Sales Notification",
+    "EventBusName": "custom-eventbus-account-3"
+  }
+]

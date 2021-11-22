@@ -1,0 +1,62 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  SecurityEventBusArn:
+    Description: ARN of the Security event bus. This is the target for security rules in this region.
+    Type: String
+
+  EventBusArnAccount3:
+    Description: ARN of the default event bus in Account 3
+    Type: String
+
+Resources:
+
+  # This IAM role allows EventBridge to assume the permissions necessary to send events
+  # from the source event buses to the destination event bus.
+  SourceToDestinationEventBusRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      Policies:
+        - PolicyName: PutEventsOnDestinationEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: "events:PutEvents"
+                Resource:
+                  - !Ref SecurityEventBusArn
+
+  SecurityAuditRule3:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: SecurityAuditRuleAccount3
+      Description: Audit rule for the Security team in Europe
+      EventBusName: !Ref EventBusArnAccount3 # ARN of the custom event bus in Account 2
+      EventPattern:
+        source:
+          - com.company.sales
+      State: ENABLED
+      Targets:
+        - Id: SendEventToSecurityEventBusArn
+          Arn: !Ref SecurityEventBusArn
+          RoleArn: !GetAtt SourceToDestinationEventBusRole.Arn
+
+Outputs:
+  SourceToDestinationEventBusRole:
+    Description: ARN of the role that allows EventBridge to assume permissions to send events to another event bus
+    Value: !GetAtt SourceToDestinationEventBusRole.Arn
+
+  SecurityAuditRule1Arn:
+    Description: ARN of the security audit rule 3
+    Value: !GetAtt SecurityAuditRule3.Arn

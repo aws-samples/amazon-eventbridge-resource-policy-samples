@@ -1,0 +1,38 @@
+[
+  {
+    "Source": "com.company.marketing",
+    "Detail": "{ \"category\": \"lab-supplies\",  \"value\": 415,  \"location\": \"eu-west\"}",
+    "DetailType": "Marketing Notification",
+    "EventBusName": "custom-eventbus-account-2"
+  },
+  {
+    "Source": "com.company.marketing",
+    "Detail": "{ \"category\": \"office-supplies\",  \"value\": 90,  \"location\": \"us-west\"}",
+    "DetailType": "Marketing Notification",
+    "EventBusName": "custom-eventbus-account-2"
+  },
+  {
+    "Source": "com.company.marketing",
+    "Detail": "{ \"category\": \"tech-supplies\",  \"value\": 600,  \"location\": \"us-east\"}",
+    "DetailType": "Marketing Notification",
+    "EventBusName": "custom-eventbus-account-2"
+  },
+  {
+    "Source": "com.company.marketing",
+    "Detail": "{ \"category\": \"lab-supplies\",  \"value\": 555,  \"location\": \"eu-west\"}",
+    "DetailType": "Marketing Notification",
+    "EventBusName": "custom-eventbus-account-2"
+  },
+  {
+    "Source": "com.company.marketing",
+    "Detail": "{ \"category\": \"office-supplies\",  \"value\": 5,  \"location\": \"us-west\"}",
+    "DetailType": "Marketing Notification",
+    "EventBusName": "custom-eventbus-account-2"
+  },
+  {
+    "Source": "com.company.marketing",
+    "Detail": "{ \"category\": \"lab-supplies\",  \"value\": 78,  \"location\": \"eu-east\"}",
+    "DetailType": "Marketing Notification",
+    "EventBusName": "custom-eventbus-account-2"
+  }
+]

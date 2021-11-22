@@ -1,0 +1,105 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  SecurityEventBusArn:
+    Description: ARN of the Security event bus. This is the target for security rules in this region.
+    Type: String
+
+  EventBusArnAccount1:
+    Description: ARN of the default event bus in Account 1
+    Type: String
+
+  EventBusArnAccount2:
+    Description: ARN of the custom event bus in Account 2
+    Type: String
+
+Resources:
+
+  # This IAM role allows EventBridge to assume the permissions necessary to send events
+  # from the source event buses to the destination event bus.
+  SourceToDestinationEventBusRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      Policies:
+        - PolicyName: PutEventsOnDestinationEventBus
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: "events:PutEvents"
+                Resource:
+                  - !Ref SecurityEventBusArn
+
+  SecurityAuditRule1:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: SecurityAuditRuleAccount1
+      Description: Audit rule for the Security team in Singapore
+      EventBusName: !Ref EventBusArnAccount1 # ARN of the default event bus in Account 1
+      EventPattern:
+        source:
+          - aws.cloudtrail
+        detail-type:
+          - AWS API Call via CloudTrail
+        detail:
+          eventSource:
+            - cloudtrail.amazonaws.com
+          eventName:
+            - ConsoleLogin
+            - StopLogging
+            - CreateNetworkAclEntry
+            - CreateRoute
+            - AuthorizeSecurityGroupEgress
+            - AuthorizeSecurityGroupIngress
+            - RevokeSecurityGroupEgress
+            - RevokeSecurityGroupIngresss
+            - ApplySecurityGroupsToLoadBalancer
+            - SetSecurityGroups
+            - AuthorizeDBSecurityGroupIngress
+            - CreateDBSecurityGroup
+            - DeleteDBSecurityGroup
+            - RevokeDBSecurityGroupIngress
+      State: ENABLED
+      Targets:
+        - Id: SendEventToSecurityEventBusArn
+          Arn: !Ref SecurityEventBusArn
+          RoleArn: !GetAtt SourceToDestinationEventBusRole.Arn
+
+  SecurityAuditRule2:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: SecurityAuditRuleAccount2
+      Description: Audit rule for the Security team in Singapore
+      EventBusName: !Ref EventBusArnAccount2 # ARN of the custom event bus in Account 2
+      EventPattern:
+        source:
+          - com.company.marketing
+      State: ENABLED
+      Targets:
+        - Id: SendEventToSecurityEventBusArn
+          Arn: !Ref SecurityEventBusArn
+          RoleArn: !GetAtt SourceToDestinationEventBusRole.Arn
+
+Outputs:
+  SourceToDestinationEventBusRole:
+    Description: ARN of the role that allows EventBridge to assume permissions to send events to another event bus
+    Value: !GetAtt SourceToDestinationEventBusRole.Arn
+
+  SecurityAuditRule1Arn:
+    Description: ARN of the security audit rule 1
+    Value: !GetAtt SecurityAuditRule1.Arn
+  
+  SecurityAuditRule2Arn:
+    Description: ARN of the security audit rule 2
+    Value: !GetAtt SecurityAuditRule2.Arn
