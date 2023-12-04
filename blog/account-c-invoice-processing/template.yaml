@@ -5,7 +5,7 @@ Description: >
 
 Parameters:
   EventBusName:
-    Description: Name of the central event bus
+    Description: Name of the invoice processing event bus
     Type: String
     Default: invoice-processing-event-bus
 
