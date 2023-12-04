@@ -26,7 +26,7 @@ purge: clean
 	rm -rf .aws-sam/
 
 dev-init:
-	poetry install
+	poetry install --no-root
 
 dev-deps:
 	poetry update

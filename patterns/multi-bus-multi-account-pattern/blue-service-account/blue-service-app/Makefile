@@ -10,7 +10,7 @@ deploy: build
 
 clean:
 	find . \
-		   -type f -name '*.py[co]'         -delete \
+		-type f -name '*.py[co]'         -delete \
 		-o -type f -name 'requirements.txt' -delete \
 		-o -type d -name __pycache__        -delete
 	rm -rf .pytest_cache/
@@ -20,7 +20,7 @@ purge: clean
 	rm -rf .aws-sam/
 
 dev-init:
-	poetry install
+	poetry install --no-root
 
 dev-deps:
 	poetry update

@@ -5,11 +5,11 @@ description = "Orange service app for single-bus multi-account pattern"
 authors = ["Stephen Liedig <sliedig@amazon.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-boto3 = "^1.20.6"
+python = "^3.11"
+boto3 = "^1.33.6"
 
 [tool.poetry.dev-dependencies]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
