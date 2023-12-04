@@ -44,7 +44,7 @@ git clone https://github.com/aws-samples/amazon-eventbridge-resource-policy-samp
     ├── blue-service-account
     │   └── blue-service-app
     │       ├── subscriptions.yaml      <-- Deploy the subscription templates after all the SAM templates
-    │       └── template.yaml           <-- Deploy the SAM templates first
+    │       └── template.yaml           <-- Deploy the AWS SAM templates first
     ├── orange-service-account
     │   └── orange-service-app
     │       ├── subscriptions.yaml
@@ -55,7 +55,7 @@ git clone https://github.com/aws-samples/amazon-eventbridge-resource-policy-samp
             └── template.yaml
     ```
 
-1. Deploy each of the SAM templates (templates.yaml) in each of the folders to respective accounts. Navigate to one of the service apps folders and build and deploy the services using the SAM CLI commands
+1. Deploy each of the AWS SAM templates (templates.yaml) in each of the folders to respective accounts. Navigate to one of the service apps folders and build and deploy the services using the AWS SAM CLI commands
 
     ``` bash
     sam build
@@ -203,7 +203,7 @@ You can test the integrations by invoking the respective "publishing" functions.
         --profile [ORANGE SERVICE PROFILE]
     ```
 
-1. The subscriber functions log the event that they process to Amazon CloudWatch Logs. You can use SAM CLI to view the log entrees that the subscriber function emit to their respective logs. Here are some example of how to do that.
+1. The subscriber functions log the event that they process to Amazon CloudWatch Logs. You can use AWS SAM CLI to view the log entrees that the subscriber function emit to their respective logs. Here are some example of how to do that.
 
     **Blue Service Subscriber E2**
 

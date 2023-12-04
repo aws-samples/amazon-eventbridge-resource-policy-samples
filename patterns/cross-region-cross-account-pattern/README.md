@@ -1,14 +1,14 @@
 # Cross-region event routing with Amazon EventBridge
 
-In this scenario, a company has their base of operations located in Asia Pacific (Singapore) with applications distributed across two additional Regions in US East (N. Virginia) and Europe (Frankfurt).  The applications in US East (N. Virginia) and Europe (Frankfurt) are using Amazon EventBridge for their respective applications and services.  The security team in Asia Pacific (Singapore) wishes to analyse events from the respective applications as well as receive AWS CloudTrail events for specific API calls made to specific operations to monitor infrastructure security. 
+In this scenario, a company has their base of operations located in Asia Pacific (Singapore) with applications distributed across two additional Regions in US East (N. Virginia) and Europe (Frankfurt).  The applications in US East (N. Virginia) and Europe (Frankfurt) are using Amazon EventBridge for their respective applications and services.  The security team in Asia Pacific (Singapore) wishes to analyze events from the respective applications as well as receive AWS CloudTrail events for specific API calls made to specific operations to monitor infrastructure security.
 
 ![Cross-Region](../../docs/images/cross-region.png "Cross-Region")
 
 ## Setup
 
-This sample uses the Serverless Application Model Command Line Interface (SAM CLI). To use the SAM CLI, you need the following tools.
+This sample uses the Serverless Application Model Command Line Interface (AWS SAM CLI). To use the AWS SAM CLI, you need the following tools.
 
-* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+* AWS SAM CLI - [Install the AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 * [Python 3 installed](https://www.python.org/downloads/)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 

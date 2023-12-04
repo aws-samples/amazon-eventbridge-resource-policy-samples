@@ -69,7 +69,7 @@ git clone https://github.com/aws-samples/amazon-eventbridge-resource-policy-samp
     aws cloudformation describe-stacks --stack-name devops-event-bus --query 'Stacks[0]'.Outputs
     ```
 
-1. Deploy the service accounts. This can be in any order. Navigate to one of the service apps folders and build and deploy the services using the SAM CLI commands
+1. Deploy the service accounts. This can be in any order. Navigate to one of the service apps folders and build and deploy the services using the AWS SAM CLI commands
 
     ``` bash
     sam build
@@ -148,7 +148,7 @@ You can test the integrations by invoking the respective "publishing" functions.
         --profile [ORANGE SERVICE PROFILE]
     ```
 
-1. The subscriber functions log the event that they process to Amazon CloudWatch Logs. You can use SAM CLI to view the log entrees that the subscriber function emit to their respective logs. Here are some example of how to do that.
+1. The subscriber functions log the event that they process to Amazon CloudWatch Logs. You can use AWS SAM CLI to view the log entrees that the subscriber function emit to their respective logs. Here are some example of how to do that.
 
     **Blue Service Subscriber E2**
 
