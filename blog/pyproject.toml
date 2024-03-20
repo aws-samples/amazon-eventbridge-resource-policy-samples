@@ -9,7 +9,7 @@ python = "^3.11"
 boto3 = "^1.33.6"
 
 [tool.poetry.dev-dependencies]
-black = {version = "^20.8b1", allow-prereleases = true}
+black = {version = "^24.3", allow-prereleases = true}
 
 [build-system]
 requires = ["poetry-core"]
