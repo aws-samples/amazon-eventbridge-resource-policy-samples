@@ -6,7 +6,7 @@ authors = ["Stephen Liedig <sliedig@amazon.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-boto3 = "^1.33.6"
+boto3 = "^1.34.100"
 
 [tool.poetry.dev-dependencies]
 
