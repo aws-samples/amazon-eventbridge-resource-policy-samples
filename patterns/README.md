@@ -18,7 +18,7 @@ It is very typical for organizations to have a "DevOps" team that is responsible
 
 ![Single-bus, multi-account](../docs/images/single-bus-multi-account.png "Single-bus, multi-account")
 
-### Walkthrough the [Single-bus, multi-account account pattern](single-bus-multi-account-pattern/README.md) >>
+**Walkthrough the [Single-bus, multi-account account pattern](single-bus-multi-account-pattern/README.md) >>**
 
 ## Multi-bus, multi-account account pattern
 
@@ -28,4 +28,12 @@ Service teams need to be aware of the services that are interested in subscribin
 
 ![Multi-bus, multi-account](../docs/images/multi-bus-multi-account.png "Multi-bus, multi-account")
 
-### Walkthrough the [Multi-bus, multi-account account pattern](multi-bus-multi-account-pattern/README.md) >>
+**Walkthrough the [Multi-bus, multi-account account pattern](multi-bus-multi-account-pattern/README.md) >>**
+
+## Cross-region event routing with Amazon EventBridge
+
+In this scenario, a company has their base of operations located in Asia Pacific (Singapore) with applications distributed across two additional Regions in US East (N. Virginia) and Europe (Frankfurt).  The applications in US East (N. Virginia) and Europe (Frankfurt) are using Amazon EventBridge for their respective applications and services.  The security team in Asia Pacific (Singapore) wishes to analyse events from the respective applications as well as receive AWS CloudTrail events for specific API calls made to specific operations to monitor infrastructure security.
+
+**Walkthrough the [Cross-region, cross-account pattern](cross-region-cross-account-pattern/README.md) >>**
+
+![Cross-Region](../docs/images/cross-region.png "Cross-Region")
