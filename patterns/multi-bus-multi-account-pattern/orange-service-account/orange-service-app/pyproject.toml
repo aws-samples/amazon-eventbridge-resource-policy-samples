@@ -6,9 +6,10 @@ authors = ["Stephen Liedig <sliedig@amazon.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-boto3 = "^1.33.6"
+boto3 = "^1.35.25"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
+black = "^24.8.0"
 
 [build-system]
 requires = ["poetry-core"]
