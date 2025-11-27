@@ -26,11 +26,15 @@ For more on this topic, check out these re:Invent recordings:
 
 #### [Building event-driven applications with Amazon EventBridge](https://bit.ly/3KY9Mjc)
 
-[![Walkthrough architecture](docs/images/reinvent_building.png "Building event-driven applications with Amazon EventBridge")](https://bit.ly/3KY9Mjc)
+[![Building event-driven applications with Amazon EventBridge](docs/images/reinvent_building.png "Building event-driven applications with Amazon EventBridge")](https://bit.ly/3KY9Mjc)
 
 #### [Designing event-driven integrations using Amazon EventBridge](https://bit.ly/4eH9omB)
 
-[![Walkthrough architecture](docs/images/reinvent_designing.png "Designing event-driven integrations using Amazon EventBridge")](https://bit.ly/4eH9omB)
+[![Designing event-driven integrations using Amazon EventBridge](docs/images/reinvent_designing.png "Designing event-driven integrations using Amazon EventBridge")](https://bit.ly/4eH9omB)
+
+#### [Application integration for platform builders](https://youtu.be/4lejvOd42_M?si=UiulkXSIj69FF_hN)
+
+[![Application integration for platform builders](docs/images/reinvent_platform.png "Application integration for platform builders")](https://youtu.be/4lejvOd42_M?si=UiulkXSIj69FF_hN)
 
 ### Workshops
 
