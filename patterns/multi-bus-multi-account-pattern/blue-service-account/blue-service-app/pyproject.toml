@@ -5,8 +5,8 @@ description = "Blue service app for multi-bus multi-account pattern"
 authors = ["Stephen Liedig <sliedig@amazon.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
-boto3 = "^1.35.25"
+python = "^3.12"
+boto3 = "^1.41.5"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"

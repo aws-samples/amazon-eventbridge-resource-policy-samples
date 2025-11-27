@@ -27,7 +27,7 @@ Resources:
     Properties:
       CodeUri: invoice_processing
       Handler: invoice_processing_function/app.lambda_handler
-      Runtime: python3.11
+      Runtime: python3.12
       Events:
         NewOrderCreatedRule:
           Type: EventBridgeRule

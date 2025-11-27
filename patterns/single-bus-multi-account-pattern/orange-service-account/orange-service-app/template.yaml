@@ -7,7 +7,7 @@ Description: >
 Globals:
   Function:
     Handler: app.lambda_handler
-    Runtime: python3.11
+    Runtime: python3.12
     Timeout: 3
 
 Parameters:

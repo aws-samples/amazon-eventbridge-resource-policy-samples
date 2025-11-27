@@ -18,7 +18,7 @@ The samples in this section provide sample implementations using **"single-bus, 
 
 **[Explore all the multi-account design patterns >](patterns/README.md)**
 
-## Resources
+## 3. Resources
 
 ### Videos
 
