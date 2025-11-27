@@ -14,7 +14,7 @@ This sample application walks you through how to use Amazon EventBridge resource
 
 ## 2. Multi-account design patterns
 
-The samples in this section provide sample implementations using **"single-bus, multi-account"**, and **"multi-bus, multi-account"** patterns as presented in the AWS re:Invent 2020 session [Building event-driven applications with Amazon EventBridge](https://bit.ly/3KY9Mjc) which is available on-demand on YouTube.
+The samples in this section provide sample implementations using **"single-bus, multi-account"**, and **"multi-bus, multi-account"** patterns as presented in the AWS re:Invent 2020 session [Building event-driven applications with Amazon EventBridge](https://youtu.be/Wk0FoXTUEjo?si=kjAU7viCA9qLkom2) which is available on-demand on YouTube.
 
 **[Explore all the multi-account design patterns >](patterns/README.md)**
 
@@ -24,15 +24,21 @@ The samples in this section provide sample implementations using **"single-bus, 
 
 For more on this topic, check out these re:Invent recordings:
 
-#### [Building event-driven applications with Amazon EventBridge](https://bit.ly/3KY9Mjc)
+#### [Building event-driven applications with Amazon EventBridge](https://youtu.be/Wk0FoXTUEjo?si=kjAU7viCA9qLkom2)
 
-[![Building event-driven applications with Amazon EventBridge](docs/images/reinvent_building.png "Building event-driven applications with Amazon EventBridge")](https://bit.ly/3KY9Mjc)
+More and more companies are looking at event-driven architecture and Amazon EventBridge to help with application modernization. Amazon EventBridge is helping them build loosely coupled applications that scale independently and make it easier to integrate cloud-based applications and services. But where do you start? This session covers event-driven design concepts, outlines how to deal with Amazon EventBridge event bus topologies and multi-account patterns, and presents recommended practices for building scalable event-driven applications using Amazon EventBridge
 
-#### [Designing event-driven integrations using Amazon EventBridge](https://bit.ly/4eH9omB)
+[![Building event-driven applications with Amazon EventBridge](docs/images/reinvent_building.png "Building event-driven applications with Amazon EventBridge")](https://youtu.be/Wk0FoXTUEjo?si=kjAU7viCA9qLkom2)
 
-[![Designing event-driven integrations using Amazon EventBridge](docs/images/reinvent_designing.png "Designing event-driven integrations using Amazon EventBridge")](https://bit.ly/4eH9omB)
+#### [Designing event-driven integrations using Amazon EventBridge](https://youtu.be/W3Rh70jG-LM?si=J0ycgmcqWFKbpyv8)
+
+Event-driven architecture can bring alignment to an organization’s business capabilities. Amazon EventBridge enables application integration across business applications and improves modern application development practices. In this session, learn about the roles and responsibilities of stakeholder groups and discover foundational concepts for designing and building a sustainable, scalable, serverless event bus for your organization.
+
+[![Designing event-driven integrations using Amazon EventBridge](docs/images/reinvent_designing.png "Designing event-driven integrations using Amazon EventBridge")](https://youtu.be/W3Rh70jG-LM?si=J0ycgmcqWFKbpyv8)
 
 #### [Application integration for platform builders](https://youtu.be/4lejvOd42_M?si=UiulkXSIj69FF_hN)
+
+Modern distributed applications leverage diverse integration components such as queues, event brokers, and workflows. To enhance developer productivity and enforce best practices, platform architects automate the management of these components, incorporating robust logging, monitoring, and security measures. In this session, explore the implementation of application integration using serverless components in enterprise environments. Gain insights on implementing effective data masking techniques, establishing comprehensive observability, and securely configuring cross-account access, and learn how to design and maintain scalable, secure distributed systems that align with enterprise-grade standards.
 
 [![Application integration for platform builders](docs/images/reinvent_platform.png "Application integration for platform builders")](https://youtu.be/4lejvOd42_M?si=UiulkXSIj69FF_hN)
 
@@ -40,7 +46,11 @@ For more on this topic, check out these re:Invent recordings:
 
 #### [AWS Serverless Developer Experience](https://catalog.workshops.aws/serverless-developer-experience/en-US)
 
-The AWS Serverless Developer Experience workshop offers hands-on experience building a serverless solution using AWS SAM and AWS SAM CLI. It covers event-driven architectures, messaging patterns, orchestration, observability, and their implementation. You'll explore open-source tools, Powertools for AWS Lambda, and simplified CI/CD deployments with AWS SAM Pipelines. The goal is to provide an immersive serverless development experience.
+The AWS Serverless Developer Experience Workshop is a comprehensive, hands-on training program designed to equip developers with practical serverless development skills using the AWS Serverless Application Model (AWS SAM)  and AWS SAM CLI.
+
+The workshop employs a practical, code-centric approach, emphasizing direct implementation and real-world scenario exploration to ensure you develop serverless development skills across several critical areas including distributed event-driven architectures, messaging patterns, orchestration, and observability. You will explore open-source tools, Powertools for AWS , and simplified CI/CD deployments with Gitea Actions. By the end, you will be familiar with serverless developer workflows, microservice composition using AWS SAM, serverless development best practices, and applied event-driven architectures.
+
+![AWS Serverless Developer Experience Workshop](docs/images/sde.png)
 
 ### Additional resources
 
